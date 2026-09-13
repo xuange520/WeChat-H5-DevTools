@@ -25,14 +25,19 @@ Following the WeChat 4.x desktop architecture updates, the native `F12` hotkey o
 ---
 
 <a id="matrix"></a>
-## 🖥️ WeChat & Kernel Compatibility Matrix
+## 🖥️ WeChat & RadiumWMPF Kernel Compatibility Matrix
 
-| WeChat Major Version | Tested Versions | Embedded Browser Kernel (CEF/Chromium) | Core Render Process | Injection & Debug Mechanism | Status |
+| WeChat Major Version | Tested Versions | RadiumWMPF Kernel Version | Core Render Process | Injection & Debug Mechanism | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **WeChat 4.1.x (Latest)**<br>*(Primary)* | **`4.1.13.12`**<br>`4.1.12.26`<br>`4.1.5.30` | **Chromium 126+ (Modern CEF Pipeline)**<br>Dual-process sandbox isolation | `WeixinExt.exe`<br>`Weixin.exe` (`--type=renderer`) | Frida dynamic hook on `CreateProcessW`<br>+ Transparent proxy auto-injects `vConsole` | `[PASS]` Full Support |
-| **WeChat 4.0.x Series** | `4.0.2`<br>`4.0.1`<br>`4.0.0` | **Chromium 116 ~ 122 (Blink Architecture)** | `Weixin.exe`<br>`WeChatAppEx.exe` | Adaptive process detection & multi-point CLI argument injection | `[PASS]` Full Support |
-| **WeChat 3.9.x Classic** | `3.9.12`<br>`3.9.11`<br>`3.9.10` & older | **Chromium 85 ~ 108 (Classic XWeb)** | `WeChat.exe`<br>`WeChatAppEx.exe` | Native `--xweb-enable-inspect=1` channel | `[PASS]` Full Support |
-| **Stealth Sandbox**<br>*(Standalone)* | Any OS<br>(Win / Mac / Linux) | **Latest Edge / Chrome**<br>(Full V8 Engine) | `msedge.exe`<br>`chrome.exe` | Sub-millisecond `document_start` injection with 30+ WeixinJSBridge mocks | `[PASS]` Native F12 |
+| **WeChat 4.1.x (Latest)**<br>*(Primary)* | **`4.1.13.12`**<br>`4.1.12.26`<br>`4.1.5.30` | **`25510` / `25497` / `25364` / `20089`**<br>*(Chromium 126+ CEF Pipeline)* | `WeixinExt.exe`<br>`Weixin.exe` (`--type=renderer`) | Frida dynamic hook on `CreateProcessW`<br>+ Transparent proxy auto-injects `vConsole` | `[PASS]` Full Support |
+| **WeChat 4.0.x Series** | `4.0.2`<br>`4.0.1`<br>`4.0.0` | **`16389` / `16203` / `16133` / `14315`**<br>*(Blink Architecture)* | `Weixin.exe`<br>`WeChatAppEx.exe` | Adaptive process detection & multi-point CLI argument injection | `[PASS]` Full Support |
+| **WeChat 3.9.x Classic** | `3.9.12`<br>`3.9.11`<br>`3.9.10` & older | **`11581` ~ `13909`**<br>*(Classic XWeb / Chromium 85~108)* | `WeChat.exe`<br>`WeChatAppEx.exe` | Native `--xweb-enable-inspect=1` channel | `[PASS]` Full Support |
+| **Stealth Sandbox**<br>*(Standalone)* | Any OS<br>(Win / Mac / Linux) | **Latest Edge / Chrome**<br>*(Full Chromium 130+ V8 Engine)* | `msedge.exe`<br>`chrome.exe` | Sub-millisecond `document_start` injection with 30+ WeixinJSBridge mocks | `[PASS]` Native F12 |
+
+> **💡 How to check your local RadiumWMPF kernel version?**
+> Press `Win + R` and navigate to:
+> `%AppData%\Tencent\xwechat\XPlugin\Plugins\RadiumWMPF`
+> The numeric subfolder names (e.g. `25510`, `16389`) represent your active **RadiumWMPF kernel version**.
 
 ---
 
@@ -113,17 +118,28 @@ pip install -e .
 <a id="sponsor"></a>
 ## ☕ Sponsor & Support
 
-This project is actively maintained in the author's spare time, tracking the latest internal architecture updates of WeChat desktop clients (such as `4.1.13.12`).
+This project is actively maintained in the author's spare time, tracking the latest internal architecture updates of WeChat desktop clients (such as `4.1.13.12`) and **RadiumWMPF kernels**.
 
 If **WeChat-H5-DevTools** helped your development, debugging, or security analysis workflow, feel free to sponsor a cup of coffee to support continued maintenance!
 
 <div align="center">
 
-| WeChat Pay | Alipay |
+| Alipay (Recommended) | WeChat Pay |
 | :---: | :---: |
-| Scan with WeChat | Scan with Alipay |
+| <img src="docs/images/alipay_donate.jpg" width="220" alt="Alipay QR Code" /> | <img src="docs/images/wechat_donate.jpg" width="220" alt="WeChat Pay QR Code" /> |
+| **Alipay: 苏辰的店铺 (**勇)** | **WeChat Pay: Y(**勇)** |
 
 </div>
+
+---
+
+<a id="author"></a>
+## 👤 Author & Contact
+
+- **Author / Core Maintainer**: **xuange520**
+- **WeChat (Recommended)**: `JAY_Secretsignal`
+- **Email**: `2603066228@qq.com` / `xuangeylw@gmail.com`
+- **GitHub Profile**: [@xuange520](https://github.com/xuange520)
 
 ---
 

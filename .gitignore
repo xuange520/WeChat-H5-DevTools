@@ -39,3 +39,8 @@ audit_report.md
 .vscode/
 .idea/
 *.swp
+
+# Release binary archives (stored locally & attached to GitHub Releases)
+releases/**/*.zip
+releases/**/*.whl
+releases/**/*.tar.gz

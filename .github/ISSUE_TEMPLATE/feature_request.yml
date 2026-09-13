@@ -1,0 +1,17 @@
+name: "🚀 新功能或新版本适配建议 (Feature Request)"
+description: "提出新功能建议或申请适配微信测试版 / 新特性"
+title: "[FEAT]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: feature_desc
+    attributes:
+      label: 需求背景与功能描述
+      description: 请清晰描述您希望增加的功能或支持的工作流
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: 建议实现方案或参考项目
+      description: 是否有现成的思路、逆向断点或开源实现

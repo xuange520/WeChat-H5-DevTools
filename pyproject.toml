@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "wechat-h5-devtools"
 version = "1.0.0"
 description = "微信公众号与内嵌 H5 满血调试与逆向工程套件"
-authors = [{ name = "Antigravity Team" }]
+authors = [{ name = "xuange520", email = "xuangeylw@gmail.com" }]
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
@@ -16,9 +16,22 @@ dependencies = [
     "websockets>=11.0.0"
 ]
 
+[project.urls]
+Homepage = "https://github.com/xuange520/WeChat-H5-DevTools"
+Repository = "https://github.com/xuange520/WeChat-H5-DevTools"
+Issues = "https://github.com/xuange520/WeChat-H5-DevTools/issues"
+
 [project.scripts]
 wx-h5 = "wechat_h5_devtools.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["wechat_h5_devtools*"]
+
+[tool.setuptools.package-data]
+wechat_h5_devtools = [
+    "injector/scripts/*.js",
+    "sandbox/_runtime_extension/*",
+    "sandbox/polyfills/*.js",
+    "extractor/*.js"
+]

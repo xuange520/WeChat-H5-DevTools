@@ -1,0 +1,51 @@
+name: "🐛 故障与内核兼容排错报告 (Bug Report)"
+description: "提交微信无法注入、RadiumWMPF 内核不兼容或工具运行报错"
+title: "[BUG]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈问题！请尽量提供完整真实的微信版本、RadiumWMPF 内核版本与终端报错日志，方便我们 5 分钟内精准溯源定位！
+  - type: input
+    id: wechat_version
+    attributes:
+      label: 微信客户端版本
+      description: 例如 4.1.13.12, 4.0.2, 3.9.12
+      placeholder: 4.1.13.12
+    validations:
+      required: true
+  - type: input
+    id: radium_version
+    attributes:
+      label: RadiumWMPF 内核版本
+      description: 查看 %AppData%\Tencent\xwechat\XPlugin\Plugins\RadiumWMPF 目录下的纯数字文件夹名
+      placeholder: 25510
+    validations:
+      required: true
+  - type: dropdown
+    id: os_version
+    attributes:
+      label: 操作系统
+      options:
+        - Windows 11 64-bit
+        - Windows 10 64-bit
+        - macOS
+        - 其他
+    validations:
+      required: true
+  - type: textarea
+    id: error_log
+    attributes:
+      label: 终端执行命令与报错日志
+      description: 请粘贴运行 wx-h5 命令时的完整输出与 Traceback（注意遮蔽敏感业务 Token 与 Cookie）
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction_steps
+    attributes:
+      label: 复现步骤
+      description: 1. 执行了什么命令 2. 进行了什么操作 3. 期望结果与实际表现
+    validations:
+      required: true

@@ -26,18 +26,24 @@
 ---
 
 <a id="matrix"></a><a id="兼容矩阵"></a><a id="版本与内核兼容矩阵"></a><a id="微信版本与内核兼容矩阵"></a>
-## 🖥️ 微信版本与内核兼容矩阵 (Compatibility Matrix)
+## 🖥️ 微信版本与 RadiumWMPF 内核兼容矩阵 (Compatibility Matrix)
 
-为了方便非专业开发者与安全研究人员一目了然，下表列出了工具对微信全系列主流版本、内核架构及核心进程的适配支持情况：
+为了方便非专业开发者与安全研究人员一目了然，下表列出了工具对微信全系列主流版本、**`RadiumWMPF` 内核版本**架构及核心进程的深度适配支持情况：
 
-| 微信客户端大版本 | 典型测试验证版本 | 内嵌浏览器内核版本 (Kernel) | 渲染/Web 核心进程名 | 调试注入机制 | 兼容状态 |
+| 微信客户端大版本 | 典型测试验证版本 | RadiumWMPF 内核版本 (Kernel) | 渲染/Web 核心进程名 | 调试注入机制 | 兼容状态 |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **微信 4.1.x 最新版**<br>*(当前主推)* | **`4.1.13.12`**<br>`4.1.12.26`<br>`4.1.5.30` | **Chromium 126+ (CEF 最新渲染管线)**<br>双进程沙箱隔离 | `WeixinExt.exe`<br>`Weixin.exe` (`--type=renderer`) | Frida 动态拦截 `CreateProcessW` 挂载注入<br>+ 透明代理无感注入 `vConsole` | `[PASS]` 满血完美支持 |
-| **微信 4.0.x 系列**<br>*(重构初期)* | `4.0.2`<br>`4.0.1`<br>`4.0.0` | **Chromium 116 ~ 122 (Blink 深度重构版)** | `Weixin.exe`<br>`WeChatAppEx.exe` | 进程自适应探测与多点命令行注头 | `[PASS]` 满血完美支持 |
-| **微信 3.9.x 经典版**<br>*(长期支持)* | `3.9.12`<br>`3.9.11`<br>`3.9.10` 及旧版 | **Chromium 85 ~ 108 (经典 XWeb 内核)** | `WeChat.exe`<br>`WeChatAppEx.exe` | 经典 `--xweb-enable-inspect=1` 参数注入通道 | `[PASS]` 满血完美支持 |
-| **外部脱机沙箱**<br>*(免微信客户端)* | 任意操作系统<br>(Win / Mac / Linux) | **Edge 最新版 / Chrome 最新版**<br>(V8 满血引擎) | `msedge.exe`<br>`chrome.exe` | `document_start` 毫秒级注入 30+ WeixinJSBridge Mock | `[PASS]` 满血原生 F12 |
+| **微信 4.1.x 最新版**<br>*(当前主推)* | **`4.1.13.12`**<br>`4.1.12.26`<br>`4.1.5.30` | **`25510` / `25497` / `25364` / `20089`**<br>*(底层 Chromium 126+ CEF 双进程管线)* | `WeixinExt.exe`<br>`Weixin.exe` (`--type=renderer`) | Frida 动态拦截 `CreateProcessW` 挂载注入<br>+ 透明代理无感注入 `vConsole` | `[PASS]` 满血完美支持 |
+| **微信 4.0.x 系列**<br>*(重构初期)* | `4.0.2`<br>`4.0.1`<br>`4.0.0` | **`16389` / `16203` / `16133` / `14315`**<br>*(Blink 深度重构版架构)* | `Weixin.exe`<br>`WeChatAppEx.exe` | 进程自适应探测与多点命令行注头 | `[PASS]` 满血完美支持 |
+| **微信 3.9.x 经典版**<br>*(长期支持)* | `3.9.12`<br>`3.9.11`<br>`3.9.10` 及旧版 | **`11581` ~ `13909`**<br>*(经典 XWeb / Chromium 85~108)* | `WeChat.exe`<br>`WeChatAppEx.exe` | 经典 `--xweb-enable-inspect=1` 参数注入通道 | `[PASS]` 满血完美支持 |
+| **外部脱机沙箱**<br>*(免微信客户端)* | 任意操作系统<br>(Win / Mac / Linux) | **Edge / Chrome 最新版**<br>*(Chromium 130+ 满血原生引擎)* | `msedge.exe`<br>`chrome.exe` | `document_start` 毫秒级注入 30+ WeixinJSBridge Mock | `[PASS]` 满血原生 F12 |
 
-> **提示**：工具内置了 `WeChatFinder` 智能多源定位器，无论是默认安装在 `C:\Program Files`、还是自定义安装在 `D:\Software\WeChat` 等任意盘符，均能 100% 自动识别，无需手动修改路径。
+> **💡 如何查看本机的 RadiumWMPF 内核版本？**
+> 1. 按快捷键 `Win + R` 打开运行窗口，粘贴并回车：
+>    ```text
+>    %AppData%\Tencent\xwechat\XPlugin\Plugins\RadiumWMPF
+>    ```
+> 2. 打开后看到的以纯数字命名的文件夹（如 `25510`、`17127`、`16389` 等），该数字即为本机微信当前正在生效使用的 **RadiumWMPF 内核版本号**！
+> 3. 工具内置了 `WeChatFinder` 与多源版本探测器，全自动适配上述所有版本，无需手动配置偏移。
 
 ---
 
@@ -235,22 +241,34 @@ wx-h5 scan "./output/wx1363195c4fb75cfc/344_deobfuscated" --export audit_report.
 
 开源不易，长效维护更需投入大量精力。
 
-本项目由作者基于业余时间深度逆向研发，持续追踪跟进微信客户端（如最新的 `4.1.13.12`）底层渲染架构的变动，并持续维护适配各版本内核。
+本项目由作者基于业余时间深度逆向研发，持续追踪跟进微信客户端（如最新的 `4.1.13.12`）与 **RadiumWMPF 内核**底层渲染架构的变动，并持续维护适配各版本内核。
 
 如果您觉得 **`WeChat-H5-DevTools`** 在您的日常开发、线上应急调试、逆向分析或安全审计工作中切实帮助到了您、为您节省了宝贵的时间，**欢迎请作者喝一杯香浓的咖啡以表支持与鼓励！☕** 您的慷慨支持是本项目长期迭代、技术突破与生态完善的最大动力！
 
 <div align="center">
 
-| 微信赞助支持 (WeChat Pay) | 支付宝赞助支持 (Alipay) |
+| 支付宝赞助 (推荐使用) | 微信支付赞助 |
 | :---: | :---: |
-| 扫码支持微信端逆向研发 | 扫码支持工具箱长效维护 |
-| *(欢迎在赞助备注中留下您的 GitHub ID 或寄语)* | *(感谢每一位开源同路人的厚爱与支持)* |
+| <img src="docs/images/alipay_donate.jpg" width="220" alt="支付宝收款码 - 苏辰的店铺" /> | <img src="docs/images/wechat_donate.jpg" width="220" alt="微信支付收款码" /> |
+| **支付宝：苏辰的店铺 (**勇)** | **微信支付：Y(**勇)** |
 
 > **💡 赞助权益**：
-> 1. 赞助者提出的特定微信版本适配 Issue 与定制需求将享受**第一优先级优先响应与攻坚**；
-> 2. 赞助名单将被永久收录至仓库主页的 `🌟 鸣谢赞助榜 (Backers & Sponsors)` 予以致谢！
+> 1. 赞助者提出的特定微信版本 / RadiumWMPF 内核适配 Issue 与定制需求将享受**第一优先级优先响应与攻坚**；
+> 2. 赞助名单将被永久收录至仓库主页的 `🌟 鸣谢赞助榜 (Backers & Sponsors)` 予以致谢；
+> 3. 扫码赞助时欢迎在备注中留下您的 **【GitHub ID / 昵称 / 寄语】**，或通过微信 `JAY_Secretsignal` 告知。
 
 </div>
+
+---
+
+<a id="author"></a><a id="作者与联系方式"></a>
+## 👤 作者与联系方式
+
+- **作者 / 核心开发者**：**xuange520**
+- **官方微信 (推荐首选)**：`JAY_Secretsignal` (微信逆向交流 / 商务合作 / 疑难排障)
+- **官方邮箱**：`2603066228@qq.com` / `xuangeylw@gmail.com`
+- **GitHub 主页**：[@xuange520](https://github.com/xuange520)
+- **项目开源仓库**：[WeChat-H5-DevTools](https://github.com/xuange520/WeChat-H5-DevTools)
 
 ---
 
