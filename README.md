@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/images/logo.png" width="160" alt="WeChat-H5-DevTools Logo" />
+
 # WeChat-H5-DevTools
 
 **微信 4.x 内置浏览器 / 公众号 H5 / 小程序 满血调试与逆向工程套件**

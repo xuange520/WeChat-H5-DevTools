@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/images/logo.png" width="160" alt="WeChat-H5-DevTools Logo" />
+
 # WeChat-H5-DevTools
 
 **The Ultimate Debugging & Reverse-Engineering Toolkit for WeChat 4.x In-App Browser & Official Account H5 Webpages**
