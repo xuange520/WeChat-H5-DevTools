@@ -124,10 +124,10 @@ If **WeChat-H5-DevTools** helped your development, debugging, or security analys
 
 <div align="center">
 
-| Alipay (Recommended) | WeChat Pay |
+| Alipay | WeChat Pay |
 | :---: | :---: |
-| <img src="docs/images/alipay_donate.jpg" width="220" alt="Alipay QR Code" /> | <img src="docs/images/wechat_donate.jpg" width="220" alt="WeChat Pay QR Code" /> |
-| **Alipay: 苏辰的店铺 (**勇)** | **WeChat Pay: Y(**勇)** |
+| <img src="docs/images/alipay_donate.jpg" width="200" alt="Alipay" /> | <img src="docs/images/wechat_donate.jpg" width="200" alt="WeChat Pay" /> |
+| **Alipay** | **WeChat Pay** |
 
 </div>
 
