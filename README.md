@@ -251,12 +251,13 @@ wx-h5 scan "./output/wx1363195c4fb75cfc/344_deobfuscated" --export audit_report.
 | :---: | :---: |
 | 支付宝 | 微信支付 |
 
+</div>
+
 > **💡 赞助权益**：
+> 
 > 1. 赞助者提出的特定微信版本 / RadiumWMPF 内核适配 Issue 与定制需求将享受**第一优先级优先响应与攻坚**；
 > 2. 赞助名单将被永久收录至仓库主页的 `🌟 鸣谢赞助榜 (Backers & Sponsors)` 予以致谢；
 > 3. 扫码赞助时欢迎在备注中留下您的 **【GitHub ID / 昵称 / 寄语】**，或通过微信 `JAY_Secretsignal` 告知。
-
-</div>
 
 ---
 
