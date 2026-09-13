@@ -10,23 +10,84 @@
 [![Frida 17+](https://img.shields.io/badge/Frida-17+-FF69B4?logo=frida&logoColor=white)](https://frida.re/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS-blue.svg)](https://github.com/)
 
-[核心功能](#-核心功能) · [快速上手](#-快速上手) · [命令行指南](#-命令行操作指南) · [实战工作流](#-实战工作流) · [系统架构](#-系统架构) · [免责声明](#-免责声明-disclaimer)
+[版本与内核兼容矩阵](#-微信版本与内核兼容矩阵-compatibility-matrix) · [小白新手三步起飞](#-小白新手三步起飞指引不用懂-ai不用懂代码) · [核心功能](#-核心功能) · [快速上手](#-快速上手) · [命令行指南](#-命令行操作指南) · [实战场景](#-四大经典实战工作流) · [赞助与支持](#-赞助与支持-sponsor)
 
 </div>
 
 ---
 
-## 项目背景
+## 📖 项目背景
 
-在微信 4.x（Windows / macOS）架构升级后，官方屏蔽了内置浏览器窗口对物理 `F12` 热键的响应，同时外部脱机浏览器调试常常受阻于 **“请在微信客户端打开链接”**、`WeixinJSBridge` 缺失、异步 Webpack Chunk 分包难以提取等难题。
+在微信 4.x（Windows / macOS）架构升级后，官方彻底屏蔽了内置浏览器窗口对物理 `F12` 热键的响应，同时外部脱机浏览器调试常常受阻于 **“请在微信客户端打开链接”**、`WeixinJSBridge` 缺失、异步 Webpack Chunk 分包难以提取等难题。
 
-**`WeChat-H5-DevTools`** 是一套开箱即用的全能解决方案，集 **微信内免按键浮动调试器注入**、**脱机高保真 JSSDK 模拟沙箱**、**本地代码实时热重载 (Local Overrides)**、**Webcrack 批量 AST 解混淆与 Webpack 模块解包** 以及 **全域 API 路由与国密算法静态审计** 于一体，全面覆盖公众号 H5 与微信小程序前端工程！
+**`WeChat-H5-DevTools`** 是一套开箱即用的工业级全能解决方案，集 **微信内免按键浮动调试器注入**、**脱机高保真 JSSDK 模拟沙箱**、**本地代码实时热重载 (Local Overrides)**、**Webcrack 批量 AST 解混淆与 Webpack 模块解包** 以及 **全域 API 路由与国密算法静态审计** 于一体，全面赋能微信 Web 生态开发与安全审计！
 
 ---
 
-## 核心功能
+## 🖥️ 微信版本与内核兼容矩阵 (Compatibility Matrix)
 
-* **微信 4.x 内置浏览器 DevTools 强开**：基于 Frida 17+ 进程级挂载，自适应适配微信 3.x / 4.x 多架构，一键解锁渲染器调试通道；
+为了方便非专业开发者与安全研究人员一目了然，下表列出了工具对微信全系列主流版本、内核架构及核心进程的适配支持情况：
+
+| 微信客户端大版本 | 典型测试验证版本 | 内嵌浏览器内核版本 (Kernel) | 渲染/Web 核心进程名 | 调试注入机制 | 兼容状态 |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **微信 4.1.x 最新版**<br>*(当前主推)* | **`4.1.13.12`**<br>`4.1.12.26`<br>`4.1.5.30` | **Chromium 126+ (CEF 最新渲染管线)**<br>双进程沙箱隔离 | `WeixinExt.exe`<br>`Weixin.exe` (`--type=renderer`) | Frida 动态拦截 `CreateProcessW` 挂载注入<br>+ 透明代理无感注入 `vConsole` | `[PASS]` 满血完美支持 |
+| **微信 4.0.x 系列**<br>*(重构初期)* | `4.0.2`<br>`4.0.1`<br>`4.0.0` | **Chromium 116 ~ 122 (Blink 深度重构版)** | `Weixin.exe`<br>`WeChatAppEx.exe` | 进程自适应探测与多点命令行注头 | `[PASS]` 满血完美支持 |
+| **微信 3.9.x 经典版**<br>*(长期支持)* | `3.9.12`<br>`3.9.11`<br>`3.9.10` 及旧版 | **Chromium 85 ~ 108 (经典 XWeb 内核)** | `WeChat.exe`<br>`WeChatAppEx.exe` | 经典 `--xweb-enable-inspect=1` 参数注入通道 | `[PASS]` 满血完美支持 |
+| **外部脱机沙箱**<br>*(免微信客户端)* | 任意操作系统<br>(Win / Mac / Linux) | **Edge 最新版 / Chrome 最新版**<br>(V8 满血引擎) | `msedge.exe`<br>`chrome.exe` | `document_start` 毫秒级注入 30+ WeixinJSBridge Mock | `[PASS]` 满血原生 F12 |
+
+> **提示**：工具内置了 `WeChatFinder` 智能多源定位器，无论是默认安装在 `C:\Program Files`、还是自定义安装在 `D:\Software\WeChat` 等任意盘符，均能 100% 自动识别，无需手动修改路径。
+
+---
+
+## 💡 小白新手三步起飞指引（不用懂 AI，不用懂代码！）
+
+如果你不熟悉 AI 或复杂的技术术语，只需跟随以下 3 步，像使用普通软件一样直接上手：
+
+### 第一步：打开终端安装（只需执行一次）
+按键盘 `Win + R`，输入 `cmd` 或 `powershell` 回车，粘贴运行：
+```bash
+git clone https://github.com/xuange520/WeChat-H5-DevTools.git
+cd WeChat-H5-DevTools
+pip install -r requirements.txt
+pip install -e .
+```
+*（执行完毕后，你电脑里的任何目录都可以直接使用 `wx-h5` 命令了！）*
+
+### 第二步：按你的实际需求，直接复制一行命令使用！
+
+* **需求 A：我想在电脑微信里面直接看报错日志、抓包看数据？**
+  * 在命令行输入：
+    ```bash
+    wx-h5 proxy
+    ```
+  * 打开微信里的任意公众号网页，右下角就会自动出现**绿色的 vConsole 调试小球**，点开就能查看 Log、Network 抓包、Storage 缓存！
+
+* **需求 B：网页提示“请在微信客户端打开”，我想在电脑自带 Edge/Chrome 里按 F12 调试？**
+  * 在命令行输入（把链接换成你的网页）：
+    ```bash
+    wx-h5 open "https://你的公众号网页链接.com"
+    ```
+  * 电脑会自动弹出一个满血 Edge/Chrome 浏览器，自带完整 F12 开发者工具，并且网页会误以为你是在真实的微信手机端中打开，绝不报错！
+
+* **需求 C：我想把混淆压缩的 JS 代码（一堆看不懂的 a, b, c 变量）还原成清晰好懂的代码？**
+  * 在命令行输入：
+    ```bash
+    wx-h5 deobfuscate "你的代码文件夹路径"
+    ```
+  * 工具会自动执行 AST 逆向解混淆，并把 Webpack 打包的大文件彻底拆分成各个独立的业务模块！
+
+* **需求 D：我想一键查出这个系统用了什么后端 API 接口、域名、国密加密算法？**
+  * 在命令行输入：
+    ```bash
+    wx-h5 scan "你的代码文件夹路径" -e 审计报告.md
+    ```
+  * 几秒钟后，就会在当前目录下生成一份排版精美、包含了所有接口与加密特征的完整报告文件！
+
+---
+
+## ✨ 核心功能全景
+
+* **微信 4.x 内置浏览器 DevTools 强开**：基于 Frida 17+ 进程级挂载，自适应适配微信 3.x / 4.x 多架构（全面覆盖最新的 `4.1.13.12`），一键解锁渲染器调试通道；
 * **无感透明代理注入 vConsole**：内置轻量本地代理网关，自动向所有访问的 H5 网页注入 `vConsole` / `Eruda` 移动端浮动控制台，彻底无视客户端热键屏蔽；
 * **本地代码实时热重载 (Local Overrides)**：开发调试神器，支持本地单文件秒级替换线上 JS/CSS，自动禁用缓存与跨域放行，修改即时生效；
 * **脱机高保真沙箱与 JSSDK 模拟**：内置全平台微信 User-Agent 矩阵与 30+ 常见 `WeixinJSBridge` 原生 API Mock（支持支付、扫码、定位、分享拦截），外部 Chrome/Edge 满血开 F12 不报错；
@@ -37,37 +98,7 @@
 
 ---
 
-## 快速上手
-
-### 1. 运行环境准备
-
-* **Python 3.9+**
-* **Node.js 18+**（用于 Webcrack AST 解混淆引擎）
-* **微信客户端**（Windows / macOS）
-
-### 2. 安装项目依赖
-
-```bash
-# 克隆仓库
-git clone https://github.com/xuange925/wx-h5.git
-cd wx-h5
-
-# 安装 Python 依赖
-pip install -r requirements.txt
-
-# 安装为全局 CLI 工具 (推荐)
-pip install -e .
-```
-
-### 3. 一键环境诊断
-
-```bash
-wx-h5 doctor
-```
-
----
-
-## 命令行操作指南
+## 💻 命令行操作指南
 
 你可以通过全局别名 `wx-h5 <命令>` 或 `python main.py <命令>` 进行调用。
 
@@ -87,7 +118,7 @@ wx-h5 doctor
 
 ---
 
-## 实战工作流
+## 🎯 四大经典实战工作流
 
 ### 场景 1：在微信客户端内部直接唤出调试器 (vConsole 浮动绿标)
 *适用场景：需要在真实微信登录态、支付环境或企业微信内部调试页面。*
@@ -130,29 +161,18 @@ wx-h5 open "https://mp.weixin.qq.com/s/xxxx" --browser chrome --ua android
 
 ---
 
-### 场景 4：批量 AST 解混淆与 Webpack 模块解包 (Webcrack 引擎)
-*适用场景：面对混淆压缩的 JS 代码或小程序单体包，将其恢复为清晰可读的原始模块结构。*
+### 场景 4：批量 AST 解混淆与全域静态逆向代码审计
+*适用场景：面对混淆压缩的 JS 代码或小程序单体包，恢复其模块结构并提取后端接口清单与加密算法。*
 
 ```bash
-# 单工程解混淆
-wx-h5 deobfuscate "./output/wx1363195c4fb75cfc/344"
-
-# 批量解混淆某个总目录下的所有子版本/子小程序工程
+# 1. 批量解混淆某个总目录下的所有子版本/子小程序工程
 wx-h5 deobfuscate "./output/wx1363195c4fb75cfc" --all
-```
-*内置 AST 容错清洗算法，自动清除微信私有组件元数据与孤立闭包，告警 100% 清零。*
 
----
-
-### 场景 5：全域静态逆向代码审计与资产报告导出
-*适用场景：梳理目标系统的后端 API 接口清单、硬编码域名、密码学算法与鉴权安全机制。*
-
-```bash
-# 执行静态扫描并导出高质感 Markdown 审计报告
-wx-h5 scan "./output/site_deobfuscated" --export audit_report.md
+# 2. 执行静态扫描并导出高质感 Markdown 审计报告
+wx-h5 scan "./output/wx1363195c4fb75cfc/344_deobfuscated" --export audit_report.md
 ```
 
-**扫描维度涵盖**：
+**扫描报告涵盖**：
 * **后端业务域名 (Base URLs)**：提取硬编码的业务 API 接口域名；
 * **网络请求框架**：识别 `wx.request`, `uni.request`, `@haici/request-core`, `axios` 等；
 * **密码学与加密特征**：识别国密 SM2/SM3/SM4、TripleDES、AES、RSA/jsbn、HMAC-SHA256、JWT/jtoken、时间戳防重放签名；
@@ -161,7 +181,7 @@ wx-h5 scan "./output/site_deobfuscated" --export audit_report.md
 
 ---
 
-## 常见问题排障 (FAQ)
+## ❓ 常见问题排障 (FAQ)
 
 <details>
 <summary><strong>Q1: 运行 <code>wx-h5</code> 提示“无法识别为 cmdlet 或命令”？</strong></summary>
@@ -183,26 +203,30 @@ wx-h5 scan "./output/site_deobfuscated" --export audit_report.md
 
 ---
 
-## 系统架构
+## ☕ 赞助与支持 (Sponsor)
 
-```
-+------------------------------------------------------------------------+
-|                   WeChat-H5-DevTools (统一调度中枢)                    |
-+------------------+----------------------+------------------------------+
-| 1. inapp_injector| 2. stealth_sandbox   | 3. asset_extractor           |
-| (微信内置注入引擎) | (外部高保真沙箱引擎) | (全站源码逆向提取引擎)       |
-+------------------+----------------------+------------------------------+
-| * 进程自适应探测 | * 全平台微信 UA 矩阵 | * HTML/DOM 深度解析器        |
-| * Frida 17+ 挂载 | * WeixinJSBridge Mock| * Webpack 异步分包递归器     |
-| * 透明代理注头   | * JSSDK 1.6.0 挡板系统| * SourceMap 源码目录还原     |
-| * vConsole 浮动窗| * 原生 Chrome 满血拉起| * Webcrack AST 解混淆与解包  |
-| * Local Overrides|                      | * 全域 API 与国密特征静态审计|
-+------------------+----------------------+------------------------------+
-```
+开源不易，长效维护更需投入大量精力。
+
+本项目由作者基于业余时间深度逆向研发，持续追踪跟进微信客户端（如最新的 `4.1.13.12`）底层渲染架构的变动，并持续维护适配各版本内核。
+
+如果您觉得 **`WeChat-H5-DevTools`** 在您的日常开发、线上应急调试、逆向分析或安全审计工作中切实帮助到了您、为您节省了宝贵的时间，**欢迎请作者喝一杯香浓的咖啡以表支持与鼓励！☕** 您的慷慨支持是本项目长期迭代、技术突破与生态完善的最大动力！
+
+<div align="center">
+
+| 微信赞助支持 (WeChat Pay) | 支付宝赞助支持 (Alipay) |
+| :---: | :---: |
+| 扫码支持微信端逆向研发 | 扫码支持工具箱长效维护 |
+| *(欢迎在赞助备注中留下您的 GitHub ID 或寄语)* | *(感谢每一位开源同路人的厚爱与支持)* |
+
+> **💡 赞助权益**：
+> 1. 赞助者提出的特定微信版本适配 Issue 与定制需求将享受**第一优先级优先响应与攻坚**；
+> 2. 赞助名单将被永久收录至仓库主页的 `🌟 鸣谢赞助榜 (Backers & Sponsors)` 予以致谢！
+
+</div>
 
 ---
 
-## 免责声明 (Disclaimer)
+## ⚠️ 免责声明 (Disclaimer)
 
 1. **合法合规与技术研究**：本项目（`WeChat-H5-DevTools`）仅用于网络安全研究、前端跨平台兼容性测试、Web 开发调试与技术学习交流，严禁将其用于任何侵犯他人合法权益、危害网络安全或违反相关法律法规的活动。
 2. **风险自负原则**：使用者在基于本项目进行调试、抓包或接口调用时，须自行确保行为的合法合规性。任何因不当使用、恶意滥用或二次开发所引发的法律纠纷、系统故障、财产损失或账号风险，本项目作者及贡献者概不承担任何直接或连带法律责任。
@@ -210,6 +234,6 @@ wx-h5 scan "./output/site_deobfuscated" --export audit_report.md
 
 ---
 
-## 开源许可证
+## 📄 开源许可证
 
 本项目基于 [MIT License](./LICENSE) 协议开源。
