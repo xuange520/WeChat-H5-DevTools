@@ -10,12 +10,13 @@
 [![Frida 17+](https://img.shields.io/badge/Frida-17+-FF69B4?logo=frida&logoColor=white)](https://frida.re/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS-blue.svg)](https://github.com/)
 
-[版本与内核兼容矩阵](#-微信版本与内核兼容矩阵-compatibility-matrix) · [小白新手三步起飞](#-小白新手三步起飞指引不用懂-ai不用懂代码) · [核心功能](#-核心功能) · [快速上手](#-快速上手) · [命令行指南](#-命令行操作指南) · [实战场景](#-四大经典实战工作流) · [赞助与支持](#-赞助与支持-sponsor)
+[核心功能](#features) · [快速上手](#quickstart) · [命令行指南](#cli) · [实战工作流](#workflows) · [系统架构](#architecture) · [兼容矩阵](#matrix) · [常见问题](#faq) · [赞助支持](#sponsor) · [免责声明](#disclaimer)
 
 </div>
 
 ---
 
+<a id="background"></a><a id="项目背景"></a>
 ## 📖 项目背景
 
 在微信 4.x（Windows / macOS）架构升级后，官方彻底屏蔽了内置浏览器窗口对物理 `F12` 热键的响应，同时外部脱机浏览器调试常常受阻于 **“请在微信客户端打开链接”**、`WeixinJSBridge` 缺失、异步 Webpack Chunk 分包难以提取等难题。
@@ -24,6 +25,7 @@
 
 ---
 
+<a id="matrix"></a><a id="兼容矩阵"></a><a id="版本与内核兼容矩阵"></a><a id="微信版本与内核兼容矩阵"></a>
 ## 🖥️ 微信版本与内核兼容矩阵 (Compatibility Matrix)
 
 为了方便非专业开发者与安全研究人员一目了然，下表列出了工具对微信全系列主流版本、内核架构及核心进程的适配支持情况：
@@ -39,6 +41,7 @@
 
 ---
 
+<a id="quickstart"></a><a id="快速上手"></a><a id="新手起步"></a><a id="小白新手三步起飞"></a>
 ## 💡 小白新手三步起飞指引（不用懂 AI，不用懂代码！）
 
 如果你不熟悉 AI 或复杂的技术术语，只需跟随以下 3 步，像使用普通软件一样直接上手：
@@ -85,6 +88,7 @@ pip install -e .
 
 ---
 
+<a id="features"></a><a id="核心功能"></a><a id="核心功能全景"></a>
 ## ✨ 核心功能全景
 
 * **微信 4.x 内置浏览器 DevTools 强开**：基于 Frida 17+ 进程级挂载，自适应适配微信 3.x / 4.x 多架构（全面覆盖最新的 `4.1.13.12`），一键解锁渲染器调试通道；
@@ -98,6 +102,7 @@ pip install -e .
 
 ---
 
+<a id="cli"></a><a id="命令行指南"></a><a id="命令行操作指南"></a>
 ## 💻 命令行操作指南
 
 你可以通过全局别名 `wx-h5 <命令>` 或 `python main.py <命令>` 进行调用。
@@ -118,6 +123,7 @@ pip install -e .
 
 ---
 
+<a id="workflows"></a><a id="实战工作流"></a><a id="实战场景"></a>
 ## 🎯 四大经典实战工作流
 
 ### 场景 1：在微信客户端内部直接唤出调试器 (vConsole 浮动绿标)
@@ -181,6 +187,27 @@ wx-h5 scan "./output/wx1363195c4fb75cfc/344_deobfuscated" --export audit_report.
 
 ---
 
+<a id="architecture"></a><a id="系统架构"></a>
+## 🏗️ 系统架构
+
+```
++------------------------------------------------------------------------+
+|                   WeChat-H5-DevTools (统一调度中枢)                    |
++------------------+----------------------+------------------------------+
+| 1. inapp_injector| 2. stealth_sandbox   | 3. asset_extractor           |
+| (微信内置注入引擎) | (外部高保真沙箱引擎) | (全站源码逆向提取引擎)       |
++------------------+----------------------+------------------------------+
+| * 进程自适应探测 | * 全平台微信 UA 矩阵 | * HTML/DOM 深度解析器        |
+| * Frida 17+ 挂载 | * WeixinJSBridge Mock| * Webpack 异步分包递归器     |
+| * 透明代理注头   | * JSSDK 1.6.0 挡板系统| * SourceMap 源码目录还原     |
+| * vConsole 浮动窗| * 原生 Chrome 满血拉起| * Webcrack AST 解混淆与解包  |
+| * Local Overrides|                      | * 全域 API 与国密特征静态审计|
++------------------+----------------------+------------------------------+
+```
+
+---
+
+<a id="faq"></a><a id="常见问题"></a>
 ## ❓ 常见问题排障 (FAQ)
 
 <details>
@@ -203,6 +230,7 @@ wx-h5 scan "./output/wx1363195c4fb75cfc/344_deobfuscated" --export audit_report.
 
 ---
 
+<a id="sponsor"></a><a id="赞助与支持"></a><a id="赞助支持"></a>
 ## ☕ 赞助与支持 (Sponsor)
 
 开源不易，长效维护更需投入大量精力。
@@ -226,6 +254,7 @@ wx-h5 scan "./output/wx1363195c4fb75cfc/344_deobfuscated" --export audit_report.
 
 ---
 
+<a id="disclaimer"></a><a id="免责声明"></a>
 ## ⚠️ 免责声明 (Disclaimer)
 
 1. **合法合规与技术研究**：本项目（`WeChat-H5-DevTools`）仅用于网络安全研究、前端跨平台兼容性测试、Web 开发调试与技术学习交流，严禁将其用于任何侵犯他人合法权益、危害网络安全或违反相关法律法规的活动。
@@ -234,6 +263,7 @@ wx-h5 scan "./output/wx1363195c4fb75cfc/344_deobfuscated" --export audit_report.
 
 ---
 
+<a id="license"></a><a id="开源许可证"></a>
 ## 📄 开源许可证
 
 本项目基于 [MIT License](./LICENSE) 协议开源。
