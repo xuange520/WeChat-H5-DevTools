@@ -124,10 +124,9 @@ If **WeChat-H5-DevTools** helped your development, debugging, or security analys
 
 <div align="center">
 
-| Alipay | WeChat Pay |
-| :---: | :---: |
 | <img src="docs/images/alipay_donate.jpg" width="200" alt="Alipay" /> | <img src="docs/images/wechat_donate.jpg" width="200" alt="WeChat Pay" /> |
-| **Alipay** | **WeChat Pay** |
+| :---: | :---: |
+| Alipay | WeChat Pay |
 
 </div>
 

@@ -247,10 +247,9 @@ wx-h5 scan "./output/wx1363195c4fb75cfc/344_deobfuscated" --export audit_report.
 
 <div align="center">
 
-| 支付宝 | 微信支付 |
-| :---: | :---: |
 | <img src="docs/images/alipay_donate.jpg" width="200" alt="支付宝" /> | <img src="docs/images/wechat_donate.jpg" width="200" alt="微信支付" /> |
-| **支付宝** | **微信支付** |
+| :---: | :---: |
+| 支付宝 | 微信支付 |
 
 > **💡 赞助权益**：
 > 1. 赞助者提出的特定微信版本 / RadiumWMPF 内核适配 Issue 与定制需求将享受**第一优先级优先响应与攻坚**；
