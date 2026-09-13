@@ -24,8 +24,8 @@ if (cpsPtr) {
             this.cmdlinePtr = args[1];
             if (this.cmdlinePtr) {
                 var cmd = this.cmdlinePtr.readUtf16String();
-                if (cmd && cmd.indexOf("WeChatAppEx.exe") !== -1) {
-                    // 仅针对非崩溃收集器的 WeChatAppEx 渲染与 Web 进程注入
+                if (cmd && (cmd.indexOf("WeChatAppEx.exe") !== -1 || cmd.indexOf("WeixinExt.exe") !== -1 || cmd.indexOf("--type=renderer") !== -1)) {
+                    // 仅针对非崩溃收集器的渲染与 Web 进程注入
                     if (cmd.indexOf("crashpad") === -1 && cmd.indexOf("--xweb-enable-inspect") === -1) {
                         var newCmd = cmd;
                         if (newCmd.indexOf("--log-level=2") !== -1) {

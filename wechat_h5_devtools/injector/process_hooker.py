@@ -30,7 +30,7 @@ class ProcessHooker:
 
         # 检查是否已有微信进程在运行
         import psutil
-        running_wechat = [p for p in psutil.process_iter(['pid', 'name']) if p.info['name'] in ['WeChat.exe', 'Weixin.exe', 'WeChatAppEx.exe']]
+        running_wechat = [p for p in psutil.process_iter(['pid', 'name']) if p.info['name'] in ['WeChat.exe', 'Weixin.exe', 'WeixinExt.exe', 'WeChatAppEx.exe']]
         if running_wechat:
             log_warn(f"检测到当前已有 {len(running_wechat)} 个微信相关进程正在运行。")
             log_step("正在自动终止旧微信进程以确保 Hook 探针能够冷启动挂载...")
