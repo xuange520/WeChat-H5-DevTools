@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wechat-h5-devtools"
+version = "1.0.0"
+description = "微信公众号与内嵌 H5 满血调试与逆向工程套件"
+authors = [{ name = "Antigravity Team" }]
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "click>=8.1.0",
+    "rich>=13.0.0",
+    "frida>=16.0.0",
+    "websockets>=11.0.0"
+]
+
+[project.scripts]
+wx-h5 = "wechat_h5_devtools.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["wechat_h5_devtools*"]
