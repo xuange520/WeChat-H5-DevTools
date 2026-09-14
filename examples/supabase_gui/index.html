@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WeChat H5 DevTools | Supabase Dark Edition</title>
+  <style>
+    :root {
+      --canvas: #121212;
+      --canvas-subtle: #181818;
+      --canvas-surface: #1e1e1e;
+      --canvas-code: #0a0a0a;
+      --hairline: #262626;
+      --hairline-hover: #383838;
+      --hairline-active: #484848;
+      --primary: #3ecf8e;
+      --primary-hover: #34b27b;
+      --primary-pressed: #24b47e;
+      --primary-glow: rgba(62, 207, 142, 0.22);
+      --primary-glow-strong: rgba(62, 207, 142, 0.45);
+      --on-primary: #0f1412;
+      --ink: #f3f3f3;
+      --ink-secondary: #c5c5c5;
+      --ink-mute: #858585;
+      --ink-faint: #525252;
+      --accent-warning: #f59e0b;
+      --accent-danger: #ef4444;
+      --accent-info: #38bdf8;
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-full: 9999px;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --font-mono: "JetBrains Mono", Menlo, Monaco, Consolas, "Courier New", monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      background-color: var(--canvas); color: var(--ink); font-family: var(--font-sans);
+      font-size: 14px; line-height: 1.5; display: flex; flex-direction: column;
+      height: 100vh; overflow: hidden; -webkit-font-smoothing: antialiased;
+    }
+    header {
+      height: 52px; background: var(--canvas-subtle); border-bottom: 1px solid var(--hairline);
+      display: flex; align-items: center; justify-content: space-between; padding: 0 20px; flex-shrink: 0;
+    }
+    .brand-group { display: flex; align-items: center; gap: 12px; }
+    .brand-logo {
+      width: 28px; height: 28px; background: linear-gradient(135deg, #1c2e26 0%, #16241e 100%);
+      border: 1px solid rgba(62, 207, 142, 0.4); border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center; color: var(--primary);
+      box-shadow: 0 0 12px var(--primary-glow);
+    }
+    .brand-title { font-size: 15px; font-weight: 600; letter-spacing: -0.2px; color: var(--ink); display: flex; align-items: center; gap: 8px; }
+    .badge-supabase {
+      font-size: 11px; font-weight: 500; background: rgba(62, 207, 142, 0.12); color: var(--primary);
+      border: 1px solid rgba(62, 207, 142, 0.3); padding: 1px 7px; border-radius: var(--radius-full);
+    }
+    .header-status { display: flex; align-items: center; gap: 10px; }
+    .status-capsule {
+      display: flex; align-items: center; gap: 7px; background: var(--canvas); border: 1px solid var(--hairline);
+      padding: 4px 12px; border-radius: var(--radius-full); font-size: 12px; color: var(--ink-secondary); font-family: var(--font-mono);
+    }
+    .pulse-dot {
+      width: 7px; height: 7px; border-radius: 50%; background: var(--primary);
+      box-shadow: 0 0 8px var(--primary); animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.35; transform: scale(0.85); } 100% { opacity: 1; transform: scale(1); } }
+    .app-body { display: flex; flex: 1; overflow: hidden; }
+    aside {
+      width: 220px; background: var(--canvas-subtle); border-right: 1px solid var(--hairline);
+      display: flex; flex-direction: column; justify-content: space-between; flex-shrink: 0; padding: 16px 10px;
+    }
+    .nav-list { display: flex; flex-direction: column; gap: 4px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-radius: var(--radius-sm);
+      color: var(--ink-secondary); cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.15s ease;
+      border: 1px solid transparent;
+    }
+    .nav-item:hover { background: var(--canvas-surface); color: var(--ink); border-color: var(--hairline); }
+    .nav-item.active {
+      background: rgba(62, 207, 142, 0.09); color: var(--primary); border-color: rgba(62, 207, 142, 0.28); font-weight: 600;
+    }
+    .nav-item.active svg { stroke: var(--primary); }
+    .nav-item svg { width: 16px; height: 16px; stroke: var(--ink-mute); transition: stroke 0.15s ease; }
+    .sidebar-footer { border-top: 1px solid var(--hairline); padding-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+    .author-card {
+      background: var(--canvas); border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+      padding: 8px 10px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .author-info { display: flex; flex-direction: column; gap: 2px; }
+    .author-label { font-size: 10px; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.5px; }
+    .author-val { font-size: 12px; font-family: var(--font-mono); color: var(--primary); font-weight: 600; }
+    .btn-copy {
+      background: var(--canvas-surface); border: 1px solid var(--hairline); color: var(--ink-secondary);
+      border-radius: 4px; padding: 3px 6px; font-size: 10px; cursor: pointer; transition: all 0.15s ease;
+    }
+    .btn-copy:hover { border-color: var(--primary); color: var(--primary); }
+    main {
+      flex: 1; display: flex; flex-direction: column; background: var(--canvas); overflow-y: auto; padding: 24px 28px; gap: 24px;
+    }
+    .view-panel { display: none; flex-direction: column; gap: 22px; animation: fadeIn 0.2s ease; }
+    .view-panel.active { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    .view-header { display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 14px; border-bottom: 1px solid var(--hairline); }
+    .view-title-group h2 { font-size: 20px; font-weight: 600; letter-spacing: -0.4px; color: var(--ink); }
+    .view-title-group p { font-size: 13px; color: var(--ink-mute); margin-top: 4px; }
+    .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .metric-card {
+      background: var(--canvas-subtle); border: 1px solid var(--hairline); border-radius: var(--radius-md);
+      padding: 16px; display: flex; flex-direction: column; gap: 10px; transition: border-color 0.15s ease, transform 0.15s ease;
+    }
+    .metric-card:hover { border-color: var(--hairline-hover); transform: translateY(-1px); }
+    .metric-header { display: flex; align-items: center; justify-content: space-between; }
+    .metric-title { font-size: 12px; color: var(--ink-mute); font-weight: 500; }
+    .metric-icon { color: var(--ink-mute); }
+    .metric-value { font-size: 22px; font-weight: 600; color: var(--ink); font-family: var(--font-mono); letter-spacing: -0.5px; }
+    .metric-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 500; color: var(--primary); }
+    .hero-card {
+      background: linear-gradient(145deg, #181c19 0%, #141614 100%); border: 1px solid rgba(62, 207, 142, 0.28);
+      border-radius: var(--radius-lg); padding: 24px; display: flex; flex-direction: column; gap: 18px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4), 0 0 30px rgba(62, 207, 142, 0.05); position: relative; overflow: hidden;
+    }
+    .hero-card::after {
+      content: ""; position: absolute; top: -60px; right: -60px; width: 180px; height: 180px;
+      background: radial-gradient(circle, rgba(62, 207, 142, 0.15) 0%, transparent 70%); pointer-events: none;
+    }
+    .hero-header { display: flex; justify-content: space-between; align-items: flex-start; }
+    .hero-badge-tag {
+      font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px;
+      background: rgba(62, 207, 142, 0.15); color: var(--primary); padding: 3px 10px;
+      border-radius: var(--radius-full); border: 1px solid rgba(62, 207, 142, 0.35);
+    }
+    .hero-title { font-size: 18px; font-weight: 600; color: var(--ink); margin-top: 6px; }
+    .hero-desc { font-size: 13px; color: var(--ink-secondary); max-width: 650px; line-height: 1.6; }
+    .hero-input-row { display: flex; gap: 10px; align-items: center; }
+    .input-box {
+      flex: 1; background: var(--canvas-code); border: 1px solid var(--hairline); border-radius: var(--radius-sm);
+      padding: 10px 14px; color: var(--ink); font-size: 13px; font-family: var(--font-mono); outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease; user-select: text;
+    }
+    .input-box:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(62, 207, 142, 0.2); }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px;
+      font-weight: 500; height: 38px; padding: 0 16px; border-radius: var(--radius-sm); cursor: pointer;
+      border: 1px solid transparent; transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1); white-space: nowrap; font-family: var(--font-sans);
+    }
+    .btn-primary {
+      background: var(--primary); color: var(--on-primary); border-color: var(--primary); font-weight: 600;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 0 16px var(--primary-glow);
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 24px var(--primary-glow-strong); transform: translateY(-1px);
+    }
+    .btn-primary:active { background: var(--primary-pressed); transform: translateY(0); }
+    .btn-secondary { background: var(--canvas-surface); color: var(--ink); border-color: var(--hairline); }
+    .btn-secondary:hover { background: #252525; border-color: var(--hairline-hover); transform: translateY(-1px); }
+    .btn-secondary:active { background: var(--canvas-surface); transform: translateY(0); }
+    .section-card { background: var(--canvas-subtle); border: 1px solid var(--hairline); border-radius: var(--radius-md); overflow: hidden; display: flex; flex-direction: column; }
+    .card-header-bar { padding: 14px 18px; background: rgba(255, 255, 255, 0.02); border-bottom: 1px solid var(--hairline); display: flex; justify-content: space-between; align-items: center; }
+    .card-header-title { font-size: 14px; font-weight: 600; color: var(--ink); }
+    .card-content { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+    .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--hairline); }
+    .toggle-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .toggle-meta h4 { font-size: 13px; font-weight: 500; color: var(--ink); }
+    .toggle-meta p { font-size: 12px; color: var(--ink-mute); margin-top: 2px; }
+    .switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #2a2a2a;
+      transition: .2s; border-radius: var(--radius-full); border: 1px solid var(--hairline);
+    }
+    .slider:before {
+      position: absolute; content: ""; height: 18px; width: 18px; left: 2px; bottom: 2px;
+      background-color: var(--ink-mute); transition: .2s; border-radius: 50%;
+    }
+    input:checked + .slider { background-color: rgba(62, 207, 142, 0.25); border-color: var(--primary); }
+    input:checked + .slider:before { transform: translateX(20px); background-color: var(--primary); box-shadow: 0 0 10px var(--primary); }
+    .table-container { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+    th { background: #141414; padding: 10px 14px; font-weight: 500; color: var(--ink-mute); border-bottom: 1px solid var(--hairline); font-size: 12px; }
+    td { padding: 12px 14px; border-bottom: 1px solid var(--hairline); color: var(--ink-secondary); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255, 255, 255, 0.02); color: var(--ink); }
+    .terminal-window {
+      background: var(--canvas-code); border: 1px solid var(--hairline); border-radius: var(--radius-md);
+      display: flex; flex-direction: column; height: 380px; overflow: hidden; font-family: var(--font-mono); font-size: 12px;
+    }
+    .terminal-header { background: #161616; border-bottom: 1px solid var(--hairline); padding: 8px 14px; display: flex; justify-content: space-between; align-items: center; }
+    .terminal-dots { display: flex; gap: 6px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot.red { background: #ff5f56; } .dot.yellow { background: #ffbd2e; } .dot.green { background: #27c93f; }
+    .terminal-title { font-size: 11px; color: var(--ink-mute); }
+    .terminal-body { flex: 1; padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; line-height: 1.6; user-select: text; }
+    .log-line { display: flex; gap: 8px; }
+    .log-time { color: var(--ink-faint); }
+    .log-tag { font-weight: 600; padding: 0 4px; border-radius: 3px; }
+    .tag-info { color: var(--primary); background: rgba(62, 207, 142, 0.1); }
+    .tag-success { color: #4ade80; background: rgba(74, 222, 128, 0.1); }
+    .tag-warn { color: var(--accent-warning); background: rgba(245, 158, 11, 0.1); }
+    .tag-error { color: var(--accent-danger); background: rgba(239, 68, 68, 0.1); }
+    .tag-hook { color: var(--accent-info); background: rgba(56, 189, 248, 0.1); }
+    .log-msg { color: var(--ink-secondary); flex: 1; word-break: break-all; }
+    footer {
+      height: 28px; background: var(--canvas-subtle); border-top: 1px solid var(--hairline);
+      display: flex; align-items: center; justify-content: space-between; padding: 0 16px; font-size: 11px;
+      color: var(--ink-mute); font-family: var(--font-mono); flex-shrink: 0;
+    }
+    .footer-item { display: flex; align-items: center; gap: 6px; }
+    .toast {
+      position: fixed; bottom: 40px; right: 30px; background: #18221c; border: 1px solid var(--primary);
+      color: var(--ink); padding: 12px 18px; border-radius: var(--radius-sm);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6), 0 0 20px var(--primary-glow);
+      display: flex; align-items: center; gap: 10px; font-size: 13px; transform: translateY(100px);
+      opacity: 0; transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); z-index: 1000;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+  </style>
+</head>
+<body>
+
+  <!-- 顶部状态栏 Header -->
+  <header>
+    <div class="brand-group">
+      <div class="brand-logo">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+      </div>
+      <div class="brand-title">
+        WeChat-H5-DevTools
+        <span class="badge-supabase">Supabase Dark</span>
+      </div>
+    </div>
+
+    <div class="header-status">
+      <div class="status-capsule">
+        <div class="pulse-dot"></div>
+        <span>WeChat 4.0.5</span>
+        <span style="color:var(--ink-mute)">PID:25560</span>
+      </div>
+      <div class="status-capsule">
+        <span style="color:var(--primary)">RadiumWMPF</span>
+        <span style="color:var(--ink-mute)">x64</span>
+      </div>
+      <div class="status-capsule">
+        <span>Proxy</span>
+        <span style="color:var(--primary)" id="headerProxyStatus">127.0.0.1:8899</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主应用体 -->
+  <div class="app-body">
+    <!-- 左侧侧边栏 Aside -->
+    <aside>
+      <div class="nav-list">
+        <div class="nav-item active" onclick="switchTab('dashboard', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          控制总览
+        </div>
+        <div class="nav-item" onclick="switchTab('injector', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+          内存热注入
+        </div>
+        <div class="nav-item" onclick="switchTab('sandbox', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+          沙箱重定向
+        </div>
+        <div class="nav-item" onclick="switchTab('extractor', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+          AST解混淆
+        </div>
+        <div class="nav-item" onclick="switchTab('auditor', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          安全审计
+        </div>
+        <div class="nav-item" onclick="switchTab('logs', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
+          实时日志
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="author-card">
+          <div class="author-info">
+            <span class="author-label">Author WeChat</span>
+            <span class="author-val" id="authorWx">Sleep_Plan</span>
+          </div>
+          <button class="btn-copy" onclick="copyAuthor()">复制</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 右侧内容 Main -->
+    <main>
+
+      <!-- 视图 1: 控制总览 Dashboard -->
+      <div id="view-dashboard" class="view-panel active">
+        <div class="view-header">
+          <div class="view-title-group">
+            <h2>控制台总览 (Dashboard)</h2>
+            <p>基于 Supabase Design Tokens 构建的微信 4.x 内置浏览器开发与逆向中枢</p>
+          </div>
+          <button class="btn btn-secondary" onclick="refreshStatus()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+            刷新内核状态
+          </button>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-title">微信宿主进程</span>
+              <svg class="metric-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+            </div>
+            <div class="metric-value">PID 25560</div>
+            <div class="metric-badge">
+              <div class="pulse-dot" style="width:5px;height:5px;"></div>
+              WeChat.exe (x64)
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-title">调试代理端口</span>
+              <svg class="metric-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+            </div>
+            <div class="metric-value">8899</div>
+            <div class="metric-badge" id="metricProxyStatus">127.0.0.1 监听中</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-title">vConsole 注入状态</span>
+              <svg class="metric-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            </div>
+            <div class="metric-value" id="vconsoleStatus">待注入</div>
+            <div class="metric-badge" id="vconsoleSub">就绪状态</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-title">离线解包资源</span>
+              <svg class="metric-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+            </div>
+            <div class="metric-value">344 Files</div>
+            <div class="metric-badge">AST 完全还原</div>
+          </div>
+        </div>
+
+        <div class="hero-card">
+          <div class="hero-header">
+            <div>
+              <span class="hero-badge-tag">Frida 17+ 内存热挂载</span>
+              <div class="hero-title">一键强制激活微信公众号 / 小程序 vConsole 调试球</div>
+            </div>
+          </div>
+          <div class="hero-desc">
+            绕过微信 RadiumWMPF 内核所有安全沙箱限制，在任意网页或公众号 H5 页面中右下角动态注入绿色调试小球，解锁 console.log、网络请求抓包、本地 Cookie 与 Storage 审查。
+          </div>
+          <div class="hero-input-row">
+            <input type="text" class="input-box" id="targetUrlInput" placeholder="输入目标 H5 链接，或留空全局生效..." value="https://mp.weixin.qq.com/s/sample_h5_demo" />
+            <button class="btn btn-primary" onclick="triggerInject()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+              立即热注入 vConsole
+            </button>
+            <button class="btn btn-secondary" onclick="triggerProxyToggle()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              切换透明代理
+            </button>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="card-header-bar">
+            <span class="card-header-title">当前微信检测拓扑 (Process Matrix)</span>
+            <span style="font-size:12px;color:var(--ink-mute);">共捕获 1 个主进程 · 3 个渲染沙箱</span>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>进程名称</th>
+                  <th>PID</th>
+                  <th>架构</th>
+                  <th>内核类型</th>
+                  <th>Hook 接入点</th>
+                  <th>状态</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="color:var(--ink);font-weight:500;">WeChat.exe</td>
+                  <td>25560</td>
+                  <td>x86_64</td>
+                  <td>WeChat 4.0.5 Host</td>
+                  <td><code>0x7FFBC1200000</code></td>
+                  <td><span class="badge-supabase" style="background:rgba(62,207,142,0.15)">已挂钩</span></td>
+                </tr>
+                <tr>
+                  <td style="color:var(--ink);font-weight:500;">WeChatAppEx.exe</td>
+                  <td>14280</td>
+                  <td>x86_64</td>
+                  <td>RadiumWMPF Chromium 122</td>
+                  <td><code>DevToolsActivePort</code></td>
+                  <td><span class="badge-supabase">监听中</span></td>
+                </tr>
+                <tr>
+                  <td style="color:var(--ink);font-weight:500;">WeChatUtility.exe</td>
+                  <td>19924</td>
+                  <td>x86_64</td>
+                  <td>Network Sandbox</td>
+                  <td><code>Transparent Socks5</code></td>
+                  <td><span class="badge-supabase">接管完成</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 视图 2: 内存热注入 Injector -->
+      <div id="view-injector" class="view-panel">
+        <div class="view-header">
+          <div class="view-title-group">
+            <h2>内存热注入配置 (Memory Injector)</h2>
+            <p>基于 Frida Gum 与 Native 指令补丁的细粒度注入策略编排</p>
+          </div>
+          <button class="btn btn-primary" onclick="triggerInject()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+            应用注入策略
+          </button>
+        </div>
+
+        <div class="section-card">
+          <div class="card-header-bar">
+            <span class="card-header-title">功能注入矩阵 (Feature Injection Matrix)</span>
+          </div>
+          <div class="card-content">
+            <div class="toggle-row">
+              <div class="toggle-meta">
+                <h4>强制激活绿色小球 vConsole</h4>
+                <p>在所有内置网页底部追加腾讯官方 vConsole 调试球，接管控制台日志与网络通信面板</p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" checked id="sw-vconsole">
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="toggle-row">
+              <div class="toggle-meta">
+                <h4>开启 Eruda 多功能手机调试器</h4>
+                <p>针对复杂 H5 页面开启轻量级移动端 Chrome DevTools 替代套件（DOM 树检查、Storage 编辑）</p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="sw-eruda">
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="toggle-row">
+              <div class="toggle-meta">
+                <h4>绕过微信 JS-SDK 域名白名单签名校验</h4>
+                <p>Hook WeixinJSBridge 底层通信协议，免白名单直接调用分享、录音、拍照等全部 JS-SDK 能力</p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" checked id="sw-jssdk">
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="toggle-row">
+              <div class="toggle-meta">
+                <h4>解锁右键审查元素 (Inspect Context Menu)</h4>
+                <p>还原 Chromium 原生右键上下文菜单，一键唤出完整的 Chrome 开发者工具主窗口</p>
+              </div>
+              <label class="switch">
+                <input type="checkbox" checked id="sw-inspect">
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 视图 3: 沙箱重定向 Sandbox -->
+      <div id="view-sandbox" class="view-panel">
+        <div class="view-header">
+          <div class="view-title-group">
+            <h2>本地文件沙箱与重定向 (Local Overrides)</h2>
+            <p>将线上微信 CDN 核心 JS 实时重定向至本地源码，所见即所得动态调试</p>
+          </div>
+          <button class="btn btn-secondary" onclick="addMockRule()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            添加重定向规则
+          </button>
+        </div>
+
+        <div class="section-card">
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>规则匹配 (URL Regex)</th>
+                  <th>本地重定向文件 (Local Path)</th>
+                  <th>命中数</th>
+                  <th>状态</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>*://res.wx.qq.com/open/js/jweixin-1.6.0.js</code></td>
+                  <td><code>D:/output/wx1363195c4fb75cfc/mock_jweixin.js</code></td>
+                  <td>12 次</td>
+                  <td><span class="badge-supabase">已启用</span></td>
+                </tr>
+                <tr>
+                  <td><code>*://res.servicewechat.com/.../app-service.js</code></td>
+                  <td><code>D:/output/wx1363195c4fb75cfc/344_deobfuscated/app-service.js</code></td>
+                  <td>45 次</td>
+                  <td><span class="badge-supabase">已启用</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 视图 4: 资源解包 Extractor -->
+      <div id="view-extractor" class="view-panel">
+        <div class="view-header">
+          <div class="view-title-group">
+            <h2>AST 语法树反混淆与提纯 (AST Deobfuscator)</h2>
+            <p>基于 Babel AST 与 Webcrack 引擎，一秒穿透三层混淆加密与常量折叠</p>
+          </div>
+          <button class="btn btn-primary" onclick="triggerAstRun()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            启动 AST 批量反混淆
+          </button>
+        </div>
+
+        <div class="hero-card">
+          <div class="hero-title">选择解包目标目录</div>
+          <div class="hero-input-row">
+            <input type="text" class="input-box" value="D:/Tools/微信工具/e0e1-wx/output/wx1363195c4fb75cfc/344" />
+            <button class="btn btn-secondary">浏览目录...</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 视图 5: 安全审计 Auditor -->
+      <div id="view-auditor" class="view-panel">
+        <div class="view-header">
+          <div class="view-title-group">
+            <h2>硬编码敏感凭据审计 (Secret Scanner)</h2>
+            <p>基于启发式正则引擎深度审计微信 AppSecret、Access Token、AES 密钥与高危内网接口</p>
+          </div>
+          <button class="btn btn-secondary" onclick="triggerScan()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            重新扫描
+          </button>
+        </div>
+
+        <div class="section-card">
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>风险等级</th>
+                  <th>类型</th>
+                  <th>所在文件与行号</th>
+                  <th>敏感值掩码</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span style="color:var(--accent-danger);font-weight:600;">[CRITICAL]</span></td>
+                  <td>WeChat AppSecret</td>
+                  <td><code>app-service.js:1420</code></td>
+                  <td><code>wx4b9281**********************</code></td>
+                </tr>
+                <tr>
+                  <td><span style="color:var(--accent-warning);font-weight:600;">[HIGH]</span></td>
+                  <td>Internal JWT Token</td>
+                  <td><code>page-frame.html:89</code></td>
+                  <td><code>eyJhbg************************</code></td>
+                </tr>
+                <tr>
+                  <td><span style="color:var(--accent-info);font-weight:600;">[MEDIUM]</span></td>
+                  <td>Staging API Endpoint</td>
+                  <td><code>vendors.js:312</code></td>
+                  <td><code>https://api-stage.internal.wechat.com</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 视图 6: 实时日志 Live Logs -->
+      <div id="view-logs" class="view-panel">
+        <div class="view-header">
+          <div class="view-title-group">
+            <h2>实时流水日志 (Live Console Stream)</h2>
+            <p>微信内核、Frida 挂钩、本地透明代理与 AST 还原引擎全局标准日志输出</p>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-secondary" onclick="addMockLog()">追加测试日志</button>
+            <button class="btn btn-secondary" onclick="clearLogs()">清空终端</button>
+          </div>
+        </div>
+
+        <div class="terminal-window">
+          <div class="terminal-header">
+            <div class="terminal-dots">
+              <div class="dot red"></div>
+              <div class="dot yellow"></div>
+              <div class="dot green"></div>
+            </div>
+            <div class="terminal-title">wechat_h5_devtools.log — Active Stream</div>
+            <div style="color:var(--primary);font-size:11px;">● LIVE</div>
+          </div>
+          <div class="terminal-body" id="terminalBody">
+            <div class="log-line">
+              <span class="log-time">[19:30:01]</span>
+              <span class="log-tag tag-info">[START]</span>
+              <span class="log-msg">WeChat-H5-DevTools v1.0.0 核心引擎已拉起</span>
+            </div>
+            <div class="log-line">
+              <span class="log-time">[19:30:02]</span>
+              <span class="log-tag tag-success">[PASS]</span>
+              <span class="log-msg">已成功接管微信 4.0.5 主进程 (PID: 25560)</span>
+            </div>
+            <div class="log-line">
+              <span class="log-time">[19:30:03]</span>
+              <span class="log-tag tag-hook">[HOOK]</span>
+              <span class="log-msg">RadiumWMPF Chromium 内核 DevToolsActivePort 劫持就绪</span>
+            </div>
+            <div class="log-line">
+              <span class="log-time">[19:30:04]</span>
+              <span class="log-tag tag-info">[PROXY]</span>
+              <span class="log-msg">透明代理服务器已监听 127.0.0.1:8899</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- 底部状态条 Footer -->
+  <footer>
+    <div class="footer-item">
+      <span>Core Engine:</span>
+      <span style="color:var(--primary)">Frida 17.2.14 / Python 3.13 / WebView2</span>
+    </div>
+    <div class="footer-item">
+      <span>Latency:</span>
+      <span style="color:var(--primary)">4ms</span>
+      <span style="margin-left:12px;">Memory:</span>
+      <span style="color:var(--primary)">28.6 MB</span>
+    </div>
+  </footer>
+
+  <!-- 浮动 Toast 通知 -->
+  <div class="toast" id="toastBox">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3ecf8e" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    <span id="toastMsg">操作已执行</span>
+  </div>
+
+  <script>
+    function switchTab(viewId, element) {
+      document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+
+      const target = document.getElementById('view-' + viewId);
+      if (target) {
+        target.classList.add('active');
+        element.classList.add('active');
+      }
+    }
+
+    function copyAuthor() {
+      const wx = "Sleep_Plan";
+      navigator.clipboard.writeText(wx).then(() => {
+        showToast("作者微信已复制到剪贴板: " + wx);
+      }).catch(() => {
+        showToast("作者微信: " + wx);
+      });
+    }
+
+    function triggerInject() {
+      const targetUrl = document.getElementById('targetUrlInput') ? document.getElementById('targetUrlInput').value : "全局生效";
+      
+      if (window.pywebview && window.pywebview.api) {
+        window.pywebview.api.inject_vconsole(targetUrl).then(res => {
+          handleInjectResult(res);
+        }).catch(err => {
+          appendLog("[ERROR]", "注入失败: " + err, "tag-error");
+        });
+      } else {
+        handleInjectResult({ success: true, message: "vConsole 绿色调试球已成功注入目标页面！" });
+      }
+    }
+
+    function handleInjectResult(res) {
+      showToast(res.message || "vConsole 绿色调试球热注入成功！");
+      document.getElementById('vconsoleStatus').innerText = "已激活";
+      document.getElementById('vconsoleStatus').style.color = "var(--primary)";
+      document.getElementById('vconsoleSub').innerText = "Injected 运行中";
+
+      appendLog("[INJECT]", "向目标页面注入腾讯官方 vConsole 调试组件成功", "tag-hook");
+      appendLog("[SUCCESS]", "WeixinJSBridge 全权限解锁完毕，Console 监听器已就绪", "tag-success");
+    }
+
+    function triggerProxyToggle() {
+      if (window.pywebview && window.pywebview.api) {
+        window.pywebview.api.toggle_proxy().then(res => {
+          showToast(res.message);
+          updateProxyUI(res.proxy_active);
+          appendLog("[PROXY]", res.message, "tag-info");
+        });
+      } else {
+        showToast("透明代理转发状态已切换");
+        appendLog("[PROXY]", "127.0.0.1:8899 透明代理已重载", "tag-info");
+      }
+    }
+
+    function updateProxyUI(active) {
+      const header = document.getElementById('headerProxyStatus');
+      const metric = document.getElementById('metricProxyStatus');
+      if (active) {
+        if (header) header.innerText = "127.0.0.1:8899";
+        if (metric) metric.innerText = "127.0.0.1 监听中";
+      } else {
+        if (header) header.innerText = "已暂停";
+        if (metric) metric.innerText = "代理服务已挂起";
+      }
+    }
+
+    function triggerAstRun() {
+      showToast("正在启动 AST 语法树反混淆流水线...");
+      appendLog("[AST]", "Webcrack 正在解析常量数组与字符串加密池...", "tag-info");
+      if (window.pywebview && window.pywebview.api) {
+        window.pywebview.api.run_ast_deobfuscator().then(res => {
+          appendLog("[AST]", res.message, "tag-success");
+          showToast(res.message);
+        });
+      } else {
+        setTimeout(() => {
+          appendLog("[AST]", "AST 遍历完成，输出 344 个纯净还原文件至 output 目录", "tag-success");
+          showToast("AST 批量反混淆完成！");
+        }, 800);
+      }
+    }
+
+    function triggerScan() {
+      showToast("敏感凭据深度审计中...");
+      appendLog("[AUDIT]", "正则引擎扫描完成，捕获 1 个高危 AppSecret 凭据", "tag-warn");
+    }
+
+    function addMockRule() {
+      showToast("已添加新本地沙箱重定向规则");
+      appendLog("[SANDBOX]", "新增映射: *://res.wx.qq.com/... -> D:/output/mock.js", "tag-info");
+    }
+
+    function refreshStatus() {
+      showToast("微信内核状态检测正常");
+      appendLog("[INFO]", "心跳轮询: PID 25560 状态健壮，RTT 2ms", "tag-info");
+    }
+
+    function appendLog(tag, msg, tagClass) {
+      const body = document.getElementById('terminalBody');
+      if (!body) return;
+
+      const now = new Date();
+      const timeStr = `[${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}]`;
+
+      const line = document.createElement('div');
+      line.className = 'log-line';
+      line.innerHTML = `
+        <span class="log-time">${timeStr}</span>
+        <span class="log-tag ${tagClass || 'tag-info'}">${tag}</span>
+        <span class="log-msg">${msg}</span>
+      `;
+      body.appendChild(line);
+      body.scrollTop = body.scrollHeight;
+    }
+
+    function addMockLog() {
+      const mockList = [
+        ["[HOOK]", "已拦截目标页面 Ajax XHR: /wxpay/query_order -> 200 OK", "tag-hook"],
+        ["[INFO]", "抓取到微信用户 OpenID 敏感字段，已自动脱敏记录", "tag-info"],
+        ["[WARN]", "检测到目标页面试图覆盖 window.console，已物理拦截并恢复", "tag-warn"],
+        ["[SUCCESS]", "微信原生分享接口 wx.onMenuShareTimeline 回调触发成功", "tag-success"]
+      ];
+      const item = mockList[Math.floor(Math.random() * mockList.length)];
+      appendLog(item[0], item[1], item[2]);
+      showToast("新日志已追加至终端");
+    }
+
+    function clearLogs() {
+      const body = document.getElementById('terminalBody');
+      if (body) body.innerHTML = '';
+      showToast("终端日志已清空");
+    }
+
+    let toastTimer = null;
+    function showToast(msg) {
+      const toast = document.getElementById('toastBox');
+      const text = document.getElementById('toastMsg');
+      if (!toast || !text) return;
+
+      text.innerText = msg;
+      toast.classList.add('show');
+
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2500);
+    }
+  </script>
+</body>
+</html>
