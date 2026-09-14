@@ -11,7 +11,7 @@
 [![Frida 17+](https://img.shields.io/badge/Frida-17+-FF69B4?logo=frida&logoColor=white)](https://frida.re/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS-blue.svg)](https://github.com/)
 
-[中文文档](./README.md) · [Matrix](#matrix) · [Features](#features) · [Quickstart](#quickstart) · [Architecture](#architecture) · [Sponsor](#sponsor) · [License](#license)
+[中文文档](./README.md) · [Matrix](#matrix) · [Screenshots](#screenshots) · [Features](#features) · [Quickstart](#quickstart) · [Architecture](#architecture) · [Sponsor](#sponsor) · [License](#license)
 
 </div>
 
@@ -40,6 +40,22 @@ Following the WeChat 4.x desktop architecture updates, the native `F12` hotkey o
 > Press `Win + R` and navigate to:
 > `%AppData%\Tencent\xwechat\XPlugin\Plugins\RadiumWMPF`
 > The numeric subfolder names (e.g. `25510`, `16389`) represent your active **RadiumWMPF kernel version**.
+
+---
+
+<a id="screenshots"></a>
+## 📷 Live In-App WeChat Article Debugging Screenshots
+
+Tested and verified on the latest WeChat desktop client (`4.1.13.12`) with `RadiumWMPF` kernel. No binary patching required — transparent floating vConsole injection across all official account articles and H5 pages:
+
+<div align="center">
+
+| WeChat Official Account Article with Floating vConsole | Expanding Mobile DevTools Panel on Live Article |
+| :---: | :---: |
+| <img src="docs/images/wechat_article_vconsole_btn.png" width="460" alt="WeChat Article with Floating vConsole" /> | <img src="docs/images/wechat_article_vconsole_panel.png" width="460" alt="vConsole Panel Expanded on WeChat Article" /> |
+| *Figure 1: Visiting any article in WeChat automatically displays the floating vConsole button* | *Figure 2: Clicking the button unfolds the full Console, Network, Storage, and Elements tree* |
+
+</div>
 
 ---
 

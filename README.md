@@ -12,7 +12,7 @@
 [![Frida 17+](https://img.shields.io/badge/Frida-17+-FF69B4?logo=frida&logoColor=white)](https://frida.re/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS-blue.svg)](https://github.com/)
 
-[核心功能](#features) · [快速上手](#quickstart) · [命令行指南](#cli) · [实战工作流](#workflows) · [系统架构](#architecture) · [兼容矩阵](#matrix) · [常见问题](#faq) · [赞助支持](#sponsor) · [免责声明](#disclaimer)
+[核心功能](#features) · [实测效果](#screenshots) · [快速上手](#quickstart) · [命令行指南](#cli) · [实战工作流](#workflows) · [系统架构](#architecture) · [兼容矩阵](#matrix) · [常见问题](#faq) · [赞助支持](#sponsor) · [免责声明](#disclaimer)
 
 </div>
 
@@ -96,6 +96,22 @@ pip install -e .
 
 ---
 
+<a id="screenshots"></a><a id="实测效果"></a><a id="实战效果"></a>
+## 📷 微信内置推文实盘调试效果展示 (Live Screenshots)
+
+基于最新微信客户端（`4.1.13.12`）与 `RadiumWMPF` 内核实测，无需逆向修改微信二进制，公众号推文与 H5 页面无感注入：
+
+<div align="center">
+
+| 微信公众号推文右下角常驻绿色 vConsole 按钮 | 点击绿色按钮即刻展开移动端完整控制台 |
+| :---: | :---: |
+| <img src="docs/images/wechat_article_vconsole_btn.png" width="460" alt="公众号推文右下角浮动绿色 vConsole 按钮" /> | <img src="docs/images/wechat_article_vconsole_panel.png" width="460" alt="推文点击展开移动端完整 vConsole 控制台" /> |
+| *图 1：微信内置浏览器打开任意推文，右下角自动浮现 vConsole 绿标* | *图 2：点击绿标即刻展开 Console、Network 抓包、Storage 与 DOM 树* |
+
+</div>
+
+---
+
 <a id="features"></a><a id="核心功能"></a><a id="核心功能全景"></a>
 ## ✨ 核心功能全景
 
@@ -145,6 +161,14 @@ pip install -e .
    将系统代理或网络抓包工具的上游代理设置为 `127.0.0.1:8899`。
 3. **打开任意公众号网页**：
    页面右下角将自动浮现绿色 `vConsole` 按钮，点击即可实时查看 Console 日志、Network 抓包、Storage 缓存与 Elements DOM 树！
+
+<div align="center">
+
+| 微信公众号推文右下角常驻绿色 vConsole 按钮 | 点击绿色按钮即刻展开移动端完整控制台 |
+| :---: | :---: |
+| <img src="docs/images/wechat_article_vconsole_btn.png" width="460" alt="公众号推文右下角浮动绿色 vConsole 按钮" /> | <img src="docs/images/wechat_article_vconsole_panel.png" width="460" alt="推文点击展开移动端完整 vConsole 控制台" /> |
+
+</div>
 
 ---
 
