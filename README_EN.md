@@ -11,7 +11,7 @@
 [![Frida 17+](https://img.shields.io/badge/Frida-17+-FF69B4?logo=frida&logoColor=white)](https://frida.re/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS-blue.svg)](https://github.com/)
 
-[中文文档](./README.md) · [Matrix](#matrix) · [Screenshots](#screenshots) · [Features](#features) · [Quickstart](#quickstart) · [Sponsor](#sponsor) · [License](#license)
+[中文文档](./README.md) · [Matrix](#matrix) · [Screenshots](#screenshots) · [Features](#features) · [Quickstart](#quickstart) · [Sponsor](#sponsor) · [Community](#community) · [License](#license)
 
 </div>
 
@@ -126,6 +126,23 @@ If **WeChat-H5-DevTools** helped your development, debugging, or security analys
 | <img src="docs/images/alipay_donate.jpg" width="200" alt="Alipay" /> | <img src="docs/images/wechat_donate.jpg" width="200" alt="WeChat Pay" /> |
 | :---: | :---: |
 | Alipay | WeChat Pay |
+
+</div>
+
+---
+
+<a id="community"></a>
+## 💬 Community & Discussion
+
+Join the **WeChat-H5-DevTools Community** to exchange reverse-engineering insights, web debugging techniques, and report new WeChat & RadiumWMPF kernel updates!
+
+<div align="center">
+
+<img src="docs/images/wechat_group_qrcode.png" width="220" alt="WeChat-H5-DevTools Community QR Code" />
+
+<br>
+
+> **💡 Note**: Scan via WeChat to join. If the QR code is expired, add WeChat ID **`Sleep_Plan`** with the note *"DevTools"* to be invited.
 
 </div>
 

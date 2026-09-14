@@ -12,7 +12,7 @@
 [![Frida 17+](https://img.shields.io/badge/Frida-17+-FF69B4?logo=frida&logoColor=white)](https://frida.re/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS-blue.svg)](https://github.com/)
 
-[核心功能](#features) · [实测效果](#screenshots) · [快速上手](#quickstart) · [命令行指南](#cli) · [实战工作流](#workflows) · [兼容矩阵](#matrix) · [常见问题](#faq) · [赞助支持](#sponsor) · [免责声明](#disclaimer)
+[核心功能](#features) · [实测效果](#screenshots) · [快速上手](#quickstart) · [命令行指南](#cli) · [实战工作流](#workflows) · [兼容矩阵](#matrix) · [常见问题](#faq) · [赞助支持](#sponsor) · [交流群](#community) · [免责声明](#disclaimer)
 
 </div>
 
@@ -265,6 +265,23 @@ wx-h5 scan "./output/wx1363195c4fb75cfc/344_deobfuscated" --export audit_report.
 > 1. 赞助者提出的特定微信版本 / RadiumWMPF 内核适配 Issue 与定制需求将享受**第一优先级优先响应与攻坚**；
 > 2. 赞助名单将被永久收录至仓库主页的 `🌟 鸣谢赞助榜 (Backers & Sponsors)` 予以致谢；
 > 3. 扫码赞助时欢迎在备注中留下您的 **【GitHub ID / 昵称 / 寄语】**，或通过微信 `Sleep_Plan` 告知。
+
+---
+
+<a id="community"></a><a id="交流群"></a><a id="官方交流群"></a>
+## 💬 官方技术交流群 (Community)
+
+欢迎加入 **WeChat-H5-DevTools 官方技术交流群**，与广大逆向安全研究人员、Web 前端工程师及内核适配者共同交流技术、反馈新版微信与 RadiumWMPF 内核 Issue、探讨高阶实战玩法！
+
+<div align="center">
+
+<img src="docs/images/wechat_group_qrcode.png" width="220" alt="WeChat-H5-DevTools 官方微信交流群二维码" />
+
+<br>
+
+> **💡 入群提示**：微信扫码即可直接加入官方交流群。若遇二维码过期，请直接添加作者微信 **`Sleep_Plan`**（备注：**DevTools 入群**），由作者拉入官方群聊。
+
+</div>
 
 ---
 

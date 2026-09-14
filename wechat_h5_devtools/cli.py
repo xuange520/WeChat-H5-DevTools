@@ -186,6 +186,14 @@ def scan_cmd(target_dir, export, all_dirs):
             final_export = _resolve_path(export, "report.md")
             analyzer.export_markdown(res, str(final_export))
 
+
+@cli.command(name="gui", help="启动现代化 Windows 11 Fluent Design 桌面图形控制台")
+def gui_cmd():
+    print_banner()
+    log_info("正在拉起 WeChat-H5-DevTools Fluent Design 桌面工作台...")
+    from .gui.app import launch_gui
+    launch_gui()
+
 def main():
     cli()
 
