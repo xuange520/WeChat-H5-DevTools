@@ -264,7 +264,7 @@ wx-h5 scan "./output/wx1363195c4fb75cfc/344_deobfuscated" --export audit_report.
 > 
 > 1. 赞助者提出的特定微信版本 / RadiumWMPF 内核适配 Issue 与定制需求将享受**第一优先级优先响应与攻坚**；
 > 2. 赞助名单将被永久收录至仓库主页的 `🌟 鸣谢赞助榜 (Backers & Sponsors)` 予以致谢；
-> 3. 扫码赞助时欢迎在备注中留下您的 **【GitHub ID / 昵称 / 寄语】**，或通过微信 `JAY_Secretsignal` 告知。
+> 3. 扫码赞助时欢迎在备注中留下您的 **【GitHub ID / 昵称 / 寄语】**，或通过微信 `Sleep_Plan` 告知。
 
 ---
 
@@ -272,7 +272,7 @@ wx-h5 scan "./output/wx1363195c4fb75cfc/344_deobfuscated" --export audit_report.
 ## 👤 作者与联系方式
 
 - **作者 / 核心开发者**：**xuange520**
-- **官方微信 (推荐首选)**：`JAY_Secretsignal` (微信逆向交流 / 商务合作 / 疑难排障)
+- **官方微信 (推荐首选)**：`Sleep_Plan` (微信逆向交流 / 商务合作 / 疑难排障)
 - **官方邮箱**：`2603066228@qq.com` / `xuangeylw@gmail.com`
 - **GitHub 主页**：[@xuange520](https://github.com/xuange520)
 - **项目开源仓库**：[WeChat-H5-DevTools](https://github.com/xuange520/WeChat-H5-DevTools)

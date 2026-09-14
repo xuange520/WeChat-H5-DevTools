@@ -35,7 +35,7 @@ wx-h5 proxy --port 8899
 - 本地防火墙是否拦截了本地透明代理。
 
 ### 第四步：提交规范化 Bug 报告
-如果确认属于内核不兼容或功能缺陷，请前往 [GitHub Issues](https://github.com/xuange520/WeChat-H5-DevTools/issues) 提交工单，或添加作者微信 `JAY_Secretsignal` 提交脱敏日志。
+如果确认属于内核不兼容或功能缺陷，请前往 [GitHub Issues](https://github.com/xuange520/WeChat-H5-DevTools/issues) 提交工单，或添加作者微信 `Sleep_Plan` 提交脱敏日志。
 
 ---
 

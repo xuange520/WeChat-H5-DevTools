@@ -79,7 +79,7 @@
 #### C. Contributors 贡献者关联与排错溯源支撑体系
 - **GitHub 贡献者图谱打通**：通过将 Commit 提交作者与 GitHub 账号 `xuange520 <xuangeylw@gmail.com>` 完美对齐，GitHub 仓库侧边栏 `Contributors` 计数实时激活为 `1`；
 - **排错溯源定位制度化**：
-  - [CONTRIBUTORS.md](file:///D:/源码/自写工具/WeChat-H5-DevTools/CONTRIBUTORS.md)：收录核心维护者与官方微信联系渠道 `JAY_Secretsignal`；
+  - [CONTRIBUTORS.md](file:///D:/源码/自写工具/WeChat-H5-DevTools/CONTRIBUTORS.md)：收录核心维护者与官方微信联系渠道 `Sleep_Plan`；
   - [CONTRIBUTING.md](file:///D:/源码/自写工具/WeChat-H5-DevTools/CONTRIBUTING.md)：建立“故障排查与定位四步法”（环境自我诊断 -> RadiumWMPF 内核核验 -> Debug Trace 捕获 -> 标准化工单提交）；
   - `.github/ISSUE_TEMPLATE/`：内置包含微信版本号、RadiumWMPF 内核版本、OS 版本与完整 Traceback 的 `bug_report.yml`、`feature_request.yml` 与紧急排障链接 `config.yml`。
 
@@ -93,7 +93,7 @@
    - 附带本路径查看指引：`%AppData%\Tencent\xwechat\XPlugin\Plugins\RadiumWMPF`
 2. **赞助二维码从 Antigravity-Nexus 无损迁移**：
    - 从 `xuange520/Antigravity-Nexus` 镜像拉取 `alipay_donate.jpg` 与 `wechat_donate.jpg` 至 `docs/images/`；
-   - 在中英双语 README 赞助栏以居中富文本表格渲染真实收款码，并补充作者官方微信 `JAY_Secretsignal` 商务与技术交流通道。
+   - 在中英双语 README 赞助栏以居中富文本表格渲染真实收款码，并补充作者官方微信 `Sleep_Plan` 商务与技术交流通道。
 
 ---
 

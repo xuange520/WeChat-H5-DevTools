@@ -6,7 +6,7 @@
 
 | 贡献者 | 角色 / 职责 | GitHub | 联系方式 |
 | :--- | :--- | :--- | :--- |
-| **xuange520** (Jay) | 核心构思、架构设计、Frida Hook 攻坚与逆向适配 | [@xuange520](https://github.com/xuange520) | 微信：`JAY_Secretsignal`<br>邮箱：`2603066228@qq.com` / `xuangeylw@gmail.com` |
+| **xuange520** (Jay) | 核心构思、架构设计、Frida Hook 攻坚与逆向适配 | [@xuange520](https://github.com/xuange520) | 微信：`Sleep_Plan`<br>邮箱：`2603066228@qq.com` / `xuangeylw@gmail.com` |
 
 ## 鸣谢贡献 (Special Thanks)
 

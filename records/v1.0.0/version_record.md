@@ -12,7 +12,7 @@
 | **Git Commit** | `24072ebf09a828fb66fc3b314461f71fa7d3f003` | 封版物理提交 SHA |
 | **发布分支** | `main` | 默认主分支 |
 | **核心维护者** | **xuange520** (Jay) | GitHub: [@xuange520](https://github.com/xuange520) |
-| **排障微信通道** | `JAY_Secretsignal` | 疑难排障与适配第一优先级通道 |
+| **排障微信通道** | `Sleep_Plan` | 疑难排障与适配第一优先级通道 |
 | **官方邮箱** | `2603066228@qq.com` / `xuangeylw@gmail.com` | 备用沟通通道 |
 
 ---
@@ -77,4 +77,4 @@
 ### 阶段四：不可抗力与长官直接介入通道 (Escalation)
 若上述 3 级排错均无法解决：
 1. 请用户执行 `wx-h5 doctor > diag.txt 2>&1` 导出脱敏诊断文件；
-2. 直接通过微信联系核心开发者 `JAY_Secretsignal`，并附上本档案编号 `v1.0.0-24072eb` 启动 1 对 1 定向修复。
+2. 直接通过微信联系核心开发者 `Sleep_Plan`，并附上本档案编号 `v1.0.0-24072eb` 启动 1 对 1 定向修复。

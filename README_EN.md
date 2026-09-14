@@ -135,7 +135,7 @@ If **WeChat-H5-DevTools** helped your development, debugging, or security analys
 ## 👤 Author & Contact
 
 - **Author / Core Maintainer**: **xuange520**
-- **WeChat (Recommended)**: `JAY_Secretsignal`
+- **WeChat (Recommended)**: `Sleep_Plan`
 - **Email**: `2603066228@qq.com` / `xuangeylw@gmail.com`
 - **GitHub Profile**: [@xuange520](https://github.com/xuange520)
 
