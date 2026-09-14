@@ -1,4 +1,4 @@
-﻿# WeChat-H5-DevTools Complete FAQ & Troubleshooting Guide
+# WeChat-H5-DevTools Complete FAQ & Troubleshooting Guide
 
 This document gathers solutions for frequent troubleshooting issues when using WeChat-H5-DevTools across Frida Hook injection, transparent proxy middleware, offline browser sandbox emulation, AST deobfuscation, and GUI desktop interaction.
 
@@ -31,15 +31,15 @@ This document gathers solutions for frequent troubleshooting issues when using W
 - **Cause**: Python virtual environment or system Scripts path is not added to your system PATH, or package is not installed in editable mode.
 - **Solution**:
   1. In the repository root, install dependencies and editable CLI entry:
-     `ash
+     ```bash
      pip install -r requirements.txt
      pip install -e .
-     `
+     ```
   2. Ensure your Python Scripts directory is added to system Path;
   3. Or invoke directly via Python module entry:
-     `ash
+     ```bash
      python main.py <command> [args]
-     `
+     ```
 
 ---
 
@@ -48,7 +48,7 @@ This document gathers solutions for frequent troubleshooting issues when using W
 - **Cause**: Monolithic bundles expand 20-40x in Babel AST memory, hitting default 1.4GB Node.js memory ceiling.
 - **Solution**:
   1. **Allocate V8 virtual heap**:
-     `ash
+     ```bash
      # Windows PowerShell
      $env:NODE_OPTIONS="--max-old-space-size=8192"
      wx-h5 deobfuscate "./output/sample_app/344"
@@ -56,12 +56,12 @@ This document gathers solutions for frequent troubleshooting issues when using W
      # Windows CMD
      set NODE_OPTIONS=--max-old-space-size=8192
      wx-h5 deobfuscate "./output/sample_app/344"
-     `
+     ```
   2. **Enable Chunked Deobfuscation (--chunked)**:
      Splits modules by dictionary entries, folding constants per isolated module before merging, dropping peak memory from 4GB to ~400MB:
-     `ash
+     ```bash
      wx-h5 deobfuscate "./output/sample_app/344" --chunked
-     `
+     ```
   3. **Exclude third-party vendor libraries (--exclude-libs)**:
      Skip heavy libraries such as Vue, React, ECharts, and CryptoJS.
 
@@ -74,9 +74,9 @@ This document gathers solutions for frequent troubleshooting issues when using W
   1. **Install GUI bridge**: Run pip install pywebview;
   2. **Ensure WebView2 Runtime**: Windows 11 includes WebView2 Runtime out-of-the-box. For Windows 10, install Microsoft Edge WebView2 Evergreen Runtime;
   3. **Browser Fallback**: If WebView2 cannot be installed, launch with --browser to preview directly in your default browser:
-     `ash
+     ```bash
      python examples/supabase_gui/app.py --browser
-     `
+     ```
 
 ---
 
@@ -88,9 +88,9 @@ This document gathers solutions for frequent troubleshooting issues when using W
 - **Solution**:
   1. Completely exit WeChat from system tray;
   2. Or terminate remaining processes in terminal:
-     `ash
+     ```bash
      taskkill /F /IM WeChat.exe /IM Weixin.exe /IM WeChatAppEx.exe /T
-     `
+     ```
   3. Re-run wx-h5 hook.
 
 ---
@@ -103,20 +103,19 @@ This document gathers solutions for frequent troubleshooting issues when using W
      - L1: Process creation intercept (CreateProcessW) adding --remote-debugging-port;
      - L2: WeixinJSBridge dispatch pipeline injection injecting vConsole script tags;
      - L3: Transparent network proxy fallback injecting script payloads in stream;
-  3. **Incrementally updated address maps**: ddresses.<kernel_version>.json configuration pool covering kernels 25560, 25510, 16389, etc.
+  3. **Incrementally updated address maps**: addresses.<kernel_version>.json configuration pool covering kernels 25560, 25510, 16389, etc.
 
 ---
 
 ### Q7: Dozens of WeChat processes exist in Task Manager. How does it lock the renderer?
 
 - **Mechanism**:
-  1. **PEB Inspection**: Auto-scans CLI flags for --type=renderer and loaded module maps (
-adium.dll / wmpf.dll);
+  1. **PEB Inspection**: Auto-scans CLI flags for --type=renderer and loaded module maps (radium.dll / wmpf.dll);
   2. **Targeted Listing**:
-     `ash
+     ```bash
      wx-h5 inspect --list
      wx-h5 hook --pid <PID>
-     `
+     ```
 
 ---
 
@@ -125,8 +124,7 @@ adium.dll / wmpf.dll);
 - **Cause**: Windows UAC Integrity Level isolation. Medium integrity terminals cannot inspect High integrity Administrator processes.
 - **Solution**:
   1. Right click PowerShell/CMD and select **Run as administrator**;
-  2. Standalone binary builds automatically request UAC elevation via embedded 
-equireAdministrator manifest.
+  2. Standalone binary builds automatically request UAC elevation via embedded requireAdministrator manifest.
 
 ---
 
@@ -136,8 +134,7 @@ equireAdministrator manifest.
 
 - **Cause**: Port conflicts (e.g. Clash, Fiddler), system proxy override, or untrusted HTTPS root certificate.
 - **Solution**:
-  1. Check port: 
-etstat -ano | findstr 8899; use --port 8999 if conflict found;
+  1. Check port: netstat -ano | findstr 8899; use --port 8999 if conflict found;
   2. Check Windows Proxy settings pointing to 127.0.0.1:8899;
   3. Install generated Root CA into **Trusted Root Certification Authorities**.
 
@@ -163,7 +160,6 @@ etstat -ano | findstr 8899; use --port 8999 if conflict found;
 ### Q6: After Local Overrides, refreshing still serves old remote cached code?
 
 - **Solution**:
-  1. Proxy crushes cache headers with 
-o-cache, no-store, must-revalidate and strips ETag;
+  1. Proxy crushes cache headers with no-cache, no-store, must-revalidate and strips ETag;
   2. Clear cache in vConsole Storage tab or delete %APPDATA%\Tencent\WeChat\radium\web\cache;
   3. Append random query param (e.g. ?_t=1726315890) to bust the cache.

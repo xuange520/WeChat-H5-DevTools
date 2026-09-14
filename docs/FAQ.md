@@ -32,15 +32,15 @@
 - **根因分析**：Python 虚拟环境或全局 Scripts 目录未加入系统 PATH 环境变量，或项目尚未以可编辑模式注册到当前 Python 环境。
 - **标准解决方案**：
   1. 在项目根目录下执行安装与入口注册：
-     `ash
+     ```bash
      pip install -r requirements.txt
      pip install -e .
-     `
+     ```
   2. 若仍未识别，请确认 Python Scripts 目录（如 C:\Python311\Scripts 或虚拟环境下的 Scripts 文件夹）已加入系统变量 Path 中；
   3. 亦可直接通过 Python 模块入口运行：
-     `ash
+     ```bash
      python main.py <子命令> [参数]
-     `
+     ```
 
 ---
 
@@ -50,7 +50,7 @@
 - **根因分析**：大型商用项目或小程序常将数百个打包模块集成进单个巨型 JS 文件。Babel 抽象语法树（AST）在内存展开后节点对象体积膨胀 20 ~ 40 倍，轻易突破 Node.js 默认的 1.4GB 堆上限。
 - **标准解决方案**：
   1. **物理扩容 V8 堆内存**：在执行解混淆前，通过环境变量分配 8GB ~ 16GB 虚拟堆内存：
-     `ash
+     ```bash
      # Windows PowerShell
      $env:NODE_OPTIONS="--max-old-space-size=8192"
      wx-h5 deobfuscate "./output/sample_app/344"
@@ -58,12 +58,12 @@
      # Windows CMD
      set NODE_OPTIONS=--max-old-space-size=8192
      wx-h5 deobfuscate "./output/sample_app/344"
-     `
+     ```
   2. **启用分块增量反混淆 (--chunked)**：
      工具内置模块切片解包引擎。带上 --chunked 参数后，工具先按顶层 Webpack 模块字典切分，对单个模块原子化执行常量折叠与死代码消除后再汇总，内存占用峰值从 4GB 直降至 400MB：
-     `ash
+     ```bash
      wx-h5 deobfuscate "./output/sample_app/344" --chunked
-     `
+     ```
   3. **忽略巨型无害第三方库**：
      使用 --exclude-libs 参数跳过 vue, react-dom, echarts, crypto-js 等成熟开源库，仅对业务代码执行解混淆，大幅提升运算效率与稳定性。
 
@@ -77,17 +77,17 @@
   - 现代 Fluent WebGUI 依托于 Windows 原生内嵌的 Microsoft Edge WebView2 硬件加速渲染管线与 pywebview 桌面桥接模块。
 - **标准解决方案**：
   1. **安装轻量 GUI 桥接依赖**：
-     `ash
+     ```bash
      pip install pywebview
-     `
+     ```
   2. **确保系统具备 WebView2 运行时**：
      - Windows 11 已默认内置 WebView2 Runtime，开箱即用；
      - 若为精简版或 Windows 10 系统，请前往微软官方下载安装 [Evergreen WebView2 Bootstrapper](https://developer.microsoft.com/en-us/microsoft-edge/webview2/)；
   3. **一键降级纯浏览器预览模式**：
      - 若当前开发环境暂未安装 WebView2，可直接添加 --browser 标志以系统默认浏览器无缝打开：
-       `ash
+       ```bash
        python examples/supabase_gui/app.py --browser
-       `
+       ```
 
 ---
 
@@ -100,9 +100,9 @@
 - **标准解决方案**：
   1. 退出电脑右下角系统托盘中的微信图标；
   2. 或在终端执行强制终止命令：
-     `ash
+     ```bash
      taskkill /F /IM WeChat.exe /IM Weixin.exe /IM WeChatAppEx.exe /T
-     `
+     ```
   3. 重新执行 wx-h5 hook，由工具拉起冷启动调试环境。
 
 ---
@@ -133,13 +133,13 @@
 - **精准定位方案**：
   1. **自动管线识别器**：wx-h5 hook 启动后自动枚举当前用户会话进程，通过 Windows PEB 探测命令行参数，匹配 --type=renderer 与 radium.dll / wmpf.dll 模块，秒级过滤非渲染进程；
   2. **多标签定向锁定**：若开启了多个公众号文章窗口，运行：
-     `ash
+     ```bash
      wx-h5 inspect --list
-     `
+     ```
      列出当前所有活跃页面的标题与对应 PID，再指定 PID 注入：
-     `ash
+     ```bash
      wx-h5 hook --pid <PID>
-     `
+     ```
 
 ---
 
@@ -160,13 +160,13 @@
 - **根因分析**：端口抢占冲突、第三方 VPN 强制劫持系统代理、或自签名根证书未安装进系统信任区。
 - **排查步骤**：
   1. **检查端口占用**：默认代理端口 8899 可能被 Clash、v2rayN、Fiddler、Charles 占用。在终端执行：
-     `ash
+     ```bash
      netstat -ano | findstr 8899
-     `
+     ```
      若被占用，换用其他端口启动：
-     `ash
+     ```bash
      wx-h5 proxy --port 8999
-     `
+     ```
   2. **检查系统代理设置**：
      进入 Windows “设置 -> 网络和 Internet -> 代理”，确认“使用代理服务器”处于开启状态且地址为 127.0.0.1:8899；同时关闭第三方代理软件的虚拟网卡 TUN 模式；
   3. **安装 HTTPS 根证书**：
@@ -184,11 +184,11 @@
      - 对齐微信官方 Windows 客户端完整 UA（包含微版本号与网络类型参数）；
   2. **CORS 与 CSP 策略重写**：
      在响应流回传给浏览器前，工具自动剥除上游服务器的 Content-Security-Policy、X-Frame-Options 限制，并自动追加：
-     `http
+     ```http
      Access-Control-Allow-Origin: *
      Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
      Access-Control-Allow-Headers: *
-     `
+     ```
      彻底消除控制台红字 CORS 拦截报错。
 
 ---
@@ -200,9 +200,9 @@
 - **根因分析**：目标网页的业务代码在加载第 0 毫秒检测了 navigator.userAgent 或尝试调用了微信私有对象 window.WeixinJSBridge。
 - **解决方案**：
   1. 使用内置沙箱启动：
-     `ash
+     ```bash
      wx-h5 open "https://目标公众号页面链接.com" --browser edge --ua ios
-     `
+     ```
   2. 工具会在目标页面任何脚本运行前（document_start 毫秒级）自动注入包含 30+ 原生 API 的高保真 JSSDK 模拟挡板（包含微信支付、地理位置、扫码等）；
   3. 如遇到特殊私有接口，可直接在 wechat_h5_devtools/sandbox/polyfills/weixin_bridge.js 中按需扩展自定义 Mock 逻辑。
 
@@ -214,11 +214,11 @@
 - **彻底击穿方案**：
   1. **代理层强制粉碎缓存头 (默认已开启)**：
      代理中间件自动重写响应标头，强制注入：
-     `http
+     ```http
      Cache-Control: no-cache, no-store, must-revalidate, max-age=0
      Pragma: no-cache
      Expires: 0
-     `
+     ```
      并物理剥除 ETag 与 If-Modified-Since 标头；
   2. **清除微信本地缓存物理文件**：
      微信将缓存保存在 %APPDATA%\Tencent\WeChat\radium\web\cache 下。可在已注入的 vConsole 面板中点击 “Storage” -> “Clear Cookies & Cache”，或关闭微信后直接删除该目录；
