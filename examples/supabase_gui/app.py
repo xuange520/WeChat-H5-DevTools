@@ -111,7 +111,7 @@ class SupabaseBridgeApi:
 
     def inject_vconsole(self, target_url=""):
         self.is_injected = True
-        msg = f"vConsole 绿色调试球已成功注入微信内置浏览器 (PID: 25560)！"
+        msg = f"vConsole 绿色调试按钮已成功注入微信内置浏览器 (PID: 25560)！"
         self.write_log("[INJECT]", f"向目标页面注入腾讯官方 vConsole 调试组件成功 (URL: {target_url or '全局生效'})")
         self.write_log("[SUCCESS]", "WeixinJSBridge 全权限解锁完毕，Console 监听器已就绪")
         return {

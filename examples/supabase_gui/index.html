@@ -362,11 +362,11 @@
           <div class="hero-header">
             <div>
               <span class="hero-badge-tag">Frida 17+ 内存热挂载</span>
-              <div class="hero-title">一键强制激活微信公众号 / 小程序 vConsole 调试球</div>
+              <div class="hero-title">一键强制激活微信公众号 / 小程序 vConsole 调试按钮</div>
             </div>
           </div>
           <div class="hero-desc">
-            绕过微信 RadiumWMPF 内核所有安全沙箱限制，在任意网页或公众号 H5 页面中右下角动态注入绿色调试小球，解锁 console.log、网络请求抓包、本地 Cookie 与 Storage 审查。
+            绕过微信 RadiumWMPF 内核所有安全沙箱限制，在任意网页或公众号 H5 页面中右下角动态注入绿色调试按钮，解锁 console.log、网络请求抓包、本地 Cookie 与 Storage 审查。
           </div>
           <div class="hero-input-row">
             <input type="text" class="input-box" id="targetUrlInput" placeholder="输入目标 H5 链接，或留空全局生效..." value="https://mp.weixin.qq.com/s/sample_h5_demo" />
@@ -449,8 +449,8 @@
           <div class="card-content">
             <div class="toggle-row">
               <div class="toggle-meta">
-                <h4>强制激活绿色小球 vConsole</h4>
-                <p>在所有内置网页底部追加腾讯官方 vConsole 调试球，接管控制台日志与网络通信面板</p>
+                <h4>强制激活绿色 vConsole 调试按钮</h4>
+                <p>在所有内置网页底部追加腾讯官方 vConsole 调试按钮，接管控制台日志与网络通信面板</p>
               </div>
               <label class="switch">
                 <input type="checkbox" checked id="sw-vconsole">
@@ -767,7 +767,7 @@
                   <td><strong>vConsole</strong></td>
                   <td><a href="https://github.com/Tencent/vConsole" target="_blank" style="color:var(--primary);text-decoration:none;">github.com/Tencent/vConsole</a></td>
                   <td>MIT</td>
-                  <td>腾讯官方移动端 Web 控制台，微信内免按键浮动小球</td>
+                  <td>腾讯官方移动端 Web 控制台，微信内免按键浮动调试按钮</td>
                 </tr>
                 <tr>
                   <td><strong>Eruda</strong></td>
@@ -967,12 +967,12 @@
           appendLog("[ERROR]", "注入失败: " + err, "tag-error");
         });
       } else {
-        handleInjectResult({ success: true, message: "vConsole 绿色调试球已成功注入目标页面！" });
+        handleInjectResult({ success: true, message: "vConsole 绿色调试按钮已成功注入目标页面！" });
       }
     }
 
     function handleInjectResult(res) {
-      showToast(res.message || "vConsole 绿色调试球热注入成功！");
+      showToast(res.message || "vConsole 绿色调试按钮热注入成功！");
       document.getElementById('vconsoleStatus').innerText = "已激活";
       document.getElementById('vconsoleStatus').style.color = "var(--primary)";
       document.getElementById('vconsoleSub').innerText = "Injected 运行中";

@@ -69,9 +69,9 @@
 | 异常报错现象 | 对应底层模块 | 核心排障文件与代码位置 | 自愈排障步骤 |
 | :--- | :--- | :--- | :--- |
 | **`wx-h5 doctor` 报 Frida 或环境缺失** | 环境探测器 | `wechat_h5_devtools/cli.py:doctor()` | 运行 `pip install frida>=16.0.0`，检查系统 PATH 中是否安装了 Node.js。 |
-| **`wx-h5 proxy` 启动后无小球** | 透明代理与注头网关 | `wechat_h5_devtools/injector/proxy_injector.py` | 1. 检查 `8899` 端口是否被占用；<br>2. 检查微信代理是否正确指向 `127.0.0.1:8899`；<br>3. 检查是否开启了全局 VPN/科学上网软件导致回路截断。 |
+| **`wx-h5 proxy` 启动后无调试按钮** | 透明代理与注头网关 | `wechat_h5_devtools/injector/proxy_injector.py` | 1. 检查 `8899` 端口是否被占用；<br>2. 检查微信代理是否正确指向 `127.0.0.1:8899`；<br>3. 检查是否开启了全局 VPN/科学上网软件导致回路截断。 |
 | **`wx-h5 open` 提示页面环境异常** | 独立沙箱 Polyfill | `wechat_h5_devtools/sandbox/polyfills/weixin_bridge.js` | 目标 H5 调用了冷门微信专属 API，在 `weixin_bridge.js` 中补全该 API 的 mock 返回。 |
-| **`wx-h5 deobfuscate` 报错** | Webcrack 逆向引擎 | `wechat_h5_devtools/extractor/webcrack_runner.js` | 运行 `node wechat_h5_devtools/extractor/webcrack_runner.js --help` 验证 Node 环境。 |
+| **`wx-h5 deobfuscate` 报错** | AST 反混淆逆向引擎 | `wechat_h5_devtools/extractor/webcrack_runner.js` | 运行 `node wechat_h5_devtools/extractor/webcrack_runner.js --help` 验证 Node 环境。 |
 | **微信 4.1.x 下子进程未被挂载** | Frida Hook 引擎 | `wechat_h5_devtools/injector/scripts/hook_inapp.js` | 确认任务管理器中是否存在 `WeixinExt.exe` 或 `Weixin.exe`，检查是否有第三方杀软拦截进程创建。 |
 
 ### 阶段四：不可抗力与长官直接介入通道 (Escalation)

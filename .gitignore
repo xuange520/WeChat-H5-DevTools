@@ -44,3 +44,8 @@ audit_report.md
 releases/**/*.zip
 releases/**/*.whl
 releases/**/*.tar.gz
+
+# Local session media and design artifacts
+records/media_assets/
+records/design_assets/
+records/logs/

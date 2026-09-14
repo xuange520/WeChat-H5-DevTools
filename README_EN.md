@@ -7,7 +7,7 @@
 **The ultimate debugging & reverse-engineering toolkit for WMPFDebugger In-App Browser & H5 Webpages with Frida hook, vConsole proxy, and API analyzer.**
 
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC_BY--NC--SA_4.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 [![Frida 17+](https://img.shields.io/badge/Frida-17+-FF69B4?logo=frida&logoColor=white)](https://frida.re/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS-blue.svg)](https://github.com/)
 
@@ -273,4 +273,4 @@ This project adheres strictly to academic and technical integrity in the open-so
 <a id="license"></a>
 ## 📄 License
 
-This project is open-source under the [MIT License](./LICENSE).
+This project is licensed under the [CC BY-NC-SA 4.0 License](./LICENSE) (Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International), strictly prohibiting any commercial exploitation and unauthorized resale.
