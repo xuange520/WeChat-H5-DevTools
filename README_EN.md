@@ -31,7 +31,7 @@ Following the WeChat 4.x desktop architecture updates, the native `F12` hotkey o
 
 | WeChat Major Version | Tested Versions | RadiumWMPF Kernel Version | Core Render Process | Injection & Debug Mechanism | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **WeChat 4.1.x (Latest)**<br>*(Primary)* | **`4.1.13.12`**<br>`4.1.12.26`<br>`4.1.5.30` | **`25510` / `25497` / `25364` / `20089`**<br>*(Chromium 126+ CEF Pipeline)* | `WeixinExt.exe`<br>`Weixin.exe` (`--type=renderer`) | Frida dynamic hook on `CreateProcessW`<br>+ Transparent proxy auto-injects `vConsole` | `[PASS]` Full Support |
+| **WeChat 4.1.x (Latest)**<br>*(Primary)* | **`4.1.13.12`**<br>`4.1.12.26`<br>`4.1.5.30` | **`25560`** / **`25510`** / `25497` / `25364` / `20089` | `WeixinExt.exe`<br>`Weixin.exe` (`--type=renderer`) | Frida dynamic hook on `CreateProcessW`<br>+ Transparent proxy auto-injects `vConsole` | `[PASS]` Full Support |
 | **WeChat 4.0.x Series** | `4.0.2`<br>`4.0.1`<br>`4.0.0` | **`16389` / `16203` / `16133` / `14315`**<br>*(Blink Architecture)* | `Weixin.exe`<br>`WeChatAppEx.exe` | Adaptive process detection & multi-point CLI argument injection | `[PASS]` Full Support |
 | **WeChat 3.9.x Classic** | `3.9.12`<br>`3.9.11`<br>`3.9.10` & older | **`11581` ~ `13909`**<br>*(Classic XWeb / Chromium 85~108)* | `WeChat.exe`<br>`WeChatAppEx.exe` | Native `--xweb-enable-inspect=1` channel | `[PASS]` Full Support |
 | **Stealth Sandbox**<br>*(Standalone)* | Any OS<br>(Win / Mac / Linux) | **Latest Edge / Chrome**<br>*(Full Chromium 130+ V8 Engine)* | `msedge.exe`<br>`chrome.exe` | Sub-millisecond `document_start` injection with 30+ WeixinJSBridge mocks | `[PASS]` Native F12 |
