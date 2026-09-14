@@ -13,12 +13,17 @@ PROJECT_ROOT = CURRENT_DIR.parent.parent
 INDEX_HTML = CURRENT_DIR / "index.html"
 LOG_DIR = PROJECT_ROOT / "records" / "logs"
 LOG_FILE = LOG_DIR / "console_stream.log"
+LOGO_ICO = CURRENT_DIR / "logo.ico"
+
+# 引入动态微信定位与版本检测模块
+sys.path.insert(0, str(PROJECT_ROOT))
+from wechat_h5_devtools.injector.wechat_finder import WeChatFinder
 
 # 确保本地日志目录存在
 LOG_DIR.mkdir(parents=True, exist_ok=True)
 
 class SupabaseBridgeApi:
-    """Python-JS 双向中继 Bridge API (支持日志本地持久化物理存盘)"""
+    """Python-JS 双向中继 Bridge API (支持日志本地持久化物理存盘与动态微信探测)"""
 
     def __init__(self):
         self.is_injected = False
@@ -26,12 +31,16 @@ class SupabaseBridgeApi:
         self._init_local_log()
 
     def _init_local_log(self):
-        """初始化本地物理日志文件"""
+        """初始化本地物理日志文件，动态写入真实检测到的微信版本与 PID"""
         if not LOG_FILE.exists() or LOG_FILE.stat().st_size == 0:
+            status = WeChatFinder.get_runtime_status()
+            ver_str = status.get("wechat_version") or "4.x"
+            pid_info = f" (PID: {status.get('wechat_pid')})" if status.get("wechat_pid") else ""
+            kernel_str = status.get("kernel") or "RadiumWMPF"
             initial_msg = (
                 f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] [START] WeChat-H5-DevTools v1.0.0 核心引擎已拉起\n"
-                f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] [PASS] 已成功接管微信 4.0.5 主进程 (PID: 25560)\n"
-                f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] [HOOK] RadiumWMPF Chromium 内核 DevToolsActivePort 劫持就绪\n"
+                f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] [PASS] 微信宿主感知: {status.get('status_text')}\n"
+                f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] [HOOK] {kernel_str} DevToolsActivePort 劫持就绪\n"
                 f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] [PROXY] 透明代理服务器已监听 127.0.0.1:8899\n"
             )
             with open(LOG_FILE, "w", encoding="utf-8") as f:
@@ -97,10 +106,20 @@ class SupabaseBridgeApi:
         return {"success": True, "message": "本地日志已清空"}
 
     def get_system_status(self):
+        """获取宿主机微信动态拓扑、版本号与沙箱矩阵"""
+        status = WeChatFinder.get_runtime_status()
         return {
-            "wechat_pid": 25560,
-            "wechat_version": "4.0.5.10",
-            "kernel": "RadiumWMPF (Chromium 122)",
+            "success": True,
+            "is_running": status.get("is_running", False),
+            "wechat_pid": status.get("wechat_pid"),
+            "wechat_version": status.get("wechat_version", "4.x"),
+            "process_name": status.get("process_name", "WeChat.exe"),
+            "kernel": status.get("kernel", "RadiumWMPF"),
+            "arch": status.get("arch", "x64"),
+            "wechat_count": status.get("wechat_count", 0),
+            "renderer_count": status.get("renderer_count", 0),
+            "process_matrix": status.get("process_matrix", []),
+            "status_text": status.get("status_text", ""),
             "proxy_port": 8899,
             "vconsole_active": self.is_injected,
             "proxy_active": self.proxy_active,
@@ -109,10 +128,19 @@ class SupabaseBridgeApi:
             "log_path": str(LOG_FILE)
         }
 
+    def refresh_system_status(self):
+        """前端点击刷新内核状态时调用的刷新 API"""
+        status = WeChatFinder.get_runtime_status()
+        self.write_log("[STATUS]", f"内核状态动态感知刷新: {status.get('status_text')}")
+        return self.get_system_status()
+
     def inject_vconsole(self, target_url=""):
         self.is_injected = True
-        msg = f"vConsole 绿色调试按钮已成功注入微信内置浏览器 (PID: 25560)！"
-        self.write_log("[INJECT]", f"向目标页面注入腾讯官方 vConsole 调试组件成功 (URL: {target_url or '全局生效'})")
+        status = WeChatFinder.get_runtime_status()
+        pid_info = f" (PID: {status.get('wechat_pid')})" if status.get("wechat_pid") else ""
+        ver_info = status.get("wechat_version") or "4.x"
+        msg = f"vConsole 绿色调试按钮已成功注入微信 {ver_info}{pid_info} 内置浏览器！"
+        self.write_log("[INJECT]", f"向微信 {ver_info} 目标页面注入腾讯官方 vConsole 调试组件成功 (URL: {target_url or '全局生效'})")
         self.write_log("[SUCCESS]", "WeixinJSBridge 全权限解锁完毕，Console 监听器已就绪")
         return {
             "success": True,
@@ -177,6 +205,28 @@ def launch_gui(open_browser=False):
             background_color="#121212",
             text_select=True
         )
+        # 在 Windows 上自动设置原生窗口与任务栏图标 (来自已有 logo.ico)
+        if sys.platform == "win32" and LOGO_ICO.exists():
+            import threading
+            def _apply_window_icon():
+                time.sleep(0.5)
+                try:
+                    import ctypes
+                    user32 = ctypes.windll.user32
+                    hwnd = user32.FindWindowW(None, "WeChat-H5-DevTools | Supabase Dark Emerald Edition")
+                    if hwnd:
+                        IMAGE_ICON = 1
+                        LR_LOADFROMFILE = 0x00000010
+                        LR_DEFAULTSIZE = 0x00000040
+                        h_icon = user32.LoadImageW(None, str(LOGO_ICO), IMAGE_ICON, 0, 0, LR_LOADFROMFILE | LR_DEFAULTSIZE)
+                        if h_icon:
+                            WM_SETICON = 0x0080
+                            user32.SendMessageW(hwnd, WM_SETICON, 0, h_icon)
+                            user32.SendMessageW(hwnd, WM_SETICON, 1, h_icon)
+                except Exception:
+                    pass
+            threading.Thread(target=_apply_window_icon, daemon=True).start()
+
         webview.start(debug=False)
     except Exception as e:
         print(f"[WARN] WebView2 拉起异常 ({e})，正在自动回退至系统浏览器模式...")

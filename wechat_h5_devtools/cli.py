@@ -187,12 +187,18 @@ def scan_cmd(target_dir, export, all_dirs):
             analyzer.export_markdown(res, str(final_export))
 
 
-@cli.command(name="gui", help="启动现代化 Windows 11 Fluent Design 桌面图形控制台")
+@cli.command(name="gui", help="启动现代化 Fluent Design 桌面图形控制台")
 def gui_cmd():
     print_banner()
-    log_info("正在拉起 WeChat-H5-DevTools Fluent Design 桌面工作台...")
-    from .gui.app import launch_gui
-    launch_gui()
+    log_info("正在拉起 WeChat-H5-DevTools 现代 Fluent 桌面工作台...")
+    import subprocess
+    import sys
+    from pathlib import Path
+    app_script = Path(__file__).resolve().parent.parent / "examples" / "supabase_gui" / "app.py"
+    if app_script.exists():
+        subprocess.run([sys.executable, str(app_script)])
+    else:
+        log_error(f"未找到图形界面入口脚本: {app_script}")
 
 def main():
     cli()

@@ -123,33 +123,23 @@ pip install -e .
 <a id="gui"></a>
 ## 🖥️ Graphical User Interface (GUI) Guide
 
-In addition to the powerful command-line interface (CLI), this project offers two desktop graphical user interfaces to fit various workflows:
+In addition to the powerful command-line interface (CLI), this project provides a unified **Modern Fluent WebGUI** (Hardware-Accelerated via WebView2) adhering to Microsoft Fluent Design and Supabase dark-mode interface standards:
 
-### 1. Modern Fluent WebGUI (Recommended / Hardware-Accelerated via WebView2)
-Adheres to Microsoft Fluent Design and Supabase dark-mode interface standards:
+- **Dynamic Kernel & Process Inspection**: Automatically senses real-time WeChat processes (`Weixin.exe` / `WeChat.exe`), extracts exact PE file versions (e.g. `4.1.13.12`), detects architecture (`x64`), and renders the live sandbox process matrix;
 - **Physical Disk Log Persistence**: Automatically writes streaming console logs to `records/logs/console_stream.log`;
 - **Interactive Operations**: Built-in physical buttons for **`[Copy All Logs]`**, **`[Open Local Log]`**, and **`[Locate Log Directory]`**;
-- **Visual Reverse & Debugging**: One-click actions for transparent proxy injection, AST deobfuscation, and Webpack chunk extraction;
+- **Visual Reverse & Debugging**: One-click actions for vConsole injection, transparent proxy toggling, AST deobfuscation, and Webpack chunk extraction;
 - **Integrated Attribution & Disclaimers**: In-app views displaying complete open-source GitHub repositories and anti-resale clauses.
 
 **Launch command**:
 ```bash
-python examples/supabase_gui/app.py
-```
-> *System requirements: Windows 10/11 (Windows 11 includes WebView2 Runtime natively; Windows 10 requires Microsoft Edge WebView2 Evergreen Runtime).*
-
-### 2. PyQt6 Fluent Desktop Edition
-Traditional native Qt6 desktop client with automatic dark/light theme switching.
-
-**Launch command**:
-```bash
-# Method A: Via CLI subcommand
+# Method A: Via unified CLI subcommand
 wx-h5 gui
 
-# Method B: Direct Python module execution
-python -m wechat_h5_devtools.gui.main_window
+# Method B: Direct Python script execution
+python examples/supabase_gui/app.py
 ```
-> *Dependency installation: Run `pip install PyQt6 PyQt-Fluent-Widgets pywebview` first.*
+> *System requirements: Windows 10/11 (Windows 11 includes WebView2 Runtime natively; Windows 10 requires Microsoft Edge WebView2 Evergreen Runtime). Requires `pip install pywebview`.*
 
 ---
 

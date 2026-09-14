@@ -9,7 +9,7 @@ This document gathers solutions for frequent troubleshooting issues when using W
 - [I. General Setup & Environment](#i-general-setup--environment)
   - [Q1: 'wx-h5' is not recognized as an internal or external command?](#q1-wx-h5-is-not-recognized-as-an-internal-or-external-command)
   - [Q8: Node.js crashes with JavaScript heap out of memory during AST deobfuscation?](#q8-nodejs-crashes-with-javascript-heap-out-of-memory-during-ast-deobfuscation)
-  - [Q11: Missing WebView2 Runtime or PyQt6 dependency when starting GUI?](#q11-missing-webview2-runtime-or-pyqt6-dependency-when-starting-gui)
+  - [Q11: Missing WebView2 Runtime when starting GUI?](#q11-missing-webview2-runtime-when-starting-gui)
 - [II. Kernel Hooking & Process Identification](#ii-kernel-hooking--process-identification)
   - [Q2: 'wx-h5 hook' reports existing WeChat process already running?](#q2-wx-h5-hook-reports-existing-wechat-process-already-running)
   - [Q5: How does the tool decouple across WeChat client and RadiumWMPF kernel upgrades?](#q5-how-does-the-tool-decouple-across-wechat-client-and-radiumwmpf-kernel-upgrades)
@@ -67,16 +67,16 @@ This document gathers solutions for frequent troubleshooting issues when using W
 
 ---
 
-### Q11: Missing WebView2 Runtime or PyQt6 dependency when starting GUI?
+### Q11: Missing WebView2 Runtime when starting GUI?
 
-- **Cause**: Modern WebGUI leverages native Windows Microsoft Edge WebView2, while PyQt6 requires separate GUI package dependencies.
+- **Cause**: Modern Fluent WebGUI leverages Windows native Microsoft Edge WebView2 hardware acceleration and pywebview bridge.
 - **Solution**:
-  1. **Fluent WebGUI (Recommended)**: Windows 11 includes WebView2 Runtime out-of-the-box. For Windows 10, install Microsoft Edge WebView2 Evergreen Runtime;
-  2. **PyQt6 Desktop GUI**: Install GUI dependencies:
+  1. **Install GUI bridge**: Run pip install pywebview;
+  2. **Ensure WebView2 Runtime**: Windows 11 includes WebView2 Runtime out-of-the-box. For Windows 10, install Microsoft Edge WebView2 Evergreen Runtime;
+  3. **Browser Fallback**: If WebView2 cannot be installed, launch with --browser to preview directly in your default browser:
      `ash
-     pip install PyQt6 PyQt-Fluent-Widgets pywebview
+     python examples/supabase_gui/app.py --browser
      `
-     Launch with wx-h5 gui.
 
 ---
 
@@ -110,7 +110,8 @@ This document gathers solutions for frequent troubleshooting issues when using W
 ### Q7: Dozens of WeChat processes exist in Task Manager. How does it lock the renderer?
 
 - **Mechanism**:
-  1. **PEB Inspection**: Auto-scans CLI flags for --type=renderer and loaded module maps (adium.dll / wmpf.dll);
+  1. **PEB Inspection**: Auto-scans CLI flags for --type=renderer and loaded module maps (
+adium.dll / wmpf.dll);
   2. **Targeted Listing**:
      `ash
      wx-h5 inspect --list
@@ -124,7 +125,8 @@ This document gathers solutions for frequent troubleshooting issues when using W
 - **Cause**: Windows UAC Integrity Level isolation. Medium integrity terminals cannot inspect High integrity Administrator processes.
 - **Solution**:
   1. Right click PowerShell/CMD and select **Run as administrator**;
-  2. Standalone binary builds automatically request UAC elevation via embedded equireAdministrator manifest.
+  2. Standalone binary builds automatically request UAC elevation via embedded 
+equireAdministrator manifest.
 
 ---
 

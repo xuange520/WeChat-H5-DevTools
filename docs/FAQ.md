@@ -1,4 +1,4 @@
-﻿# WeChat-H5-DevTools 常见问题排障全书 (FAQ & Troubleshooting)
+# WeChat-H5-DevTools 常见问题排障全书 (FAQ & Troubleshooting)
 
 本文档汇总了 WeChat-H5-DevTools 在微信内置浏览器 Hook 注入、透明代理中间件、脱机沙箱调试、AST 代码解混淆以及 GUI 桌面交互中的常见问题与排障方案。
 
@@ -9,7 +9,7 @@
 - [一、基础运行与环境配置](#一基础运行与环境配置)
   - [Q1: 运行 wx-h5 提示“无法识别为 cmdlet 或命令”？](#q1-运行-wx-h5-提示无法识别为-cmdlet-或命令)
   - [Q8: 解混淆大型单体包（>5MB）时，Node.js 报错内存溢出 (OOM) 崩溃？](#q8-解混淆大型单体包5mb时nodejs-报错内存溢出-oom-崩溃)
-  - [Q11: 启动 GUI 图形界面时提示缺少 WebView2 或 PyQt6 依赖？](#q11-启动-gui-图形界面时提示缺少-webview2-或-pyqt6-依赖)
+  - [Q11: 启动 GUI 图形界面时提示缺少 WebView2 运行时？](#q11-启动-gui-图形界面时提示缺少-webview2-运行时)
 - [二、内核注入与多进程定位](#二内核注入与多进程定位)
   - [Q2: 执行 wx-h5 hook 提示“已有微信进程在运行”？](#q2-执行-wx-h5-hook-提示已有微信进程在运行)
   - [Q5: 微信大版本升级及 RadiumWMPF 内核变动后，工具如何做到免适配稳定脱钩？](#q5-微信大版本升级及-radiumwmpf-内核变动后工具如何做到免适配稳定脱钩)
@@ -69,26 +69,24 @@
 
 ---
 
-### Q11: 启动 GUI 图形界面时提示缺少 WebView2 或 PyQt6 依赖？
+### Q11: 启动 GUI 图形界面时提示缺少 WebView2 运行时？
 
 - **问题现象**：
-  - 启动 WebGUI (python examples/supabase_gui/app.py) 时弹出系统提示要求安装 WebView2 运行时；
-  - 启动 PyQt6 桌面版 (wx-h5 gui) 提示 ModuleNotFoundError: No module named 'PyQt6'。
+  - 启动 WebGUI (wx-h5 gui 或 python examples/supabase_gui/app.py) 时弹出系统提示要求安装 WebView2 运行时，或自动回退至系统浏览器模式。
 - **根因分析**：
-  - 现代 WebGUI 依托于 Windows 10/11 原生内嵌的 Microsoft Edge WebView2 渲染管线；
-  - PyQt6 为独立 GUI 拓展组件，未包含在基础命令行依赖中。
+  - 现代 Fluent WebGUI 依托于 Windows 原生内嵌的 Microsoft Edge WebView2 硬件加速渲染管线与 pywebview 桌面桥接模块。
 - **标准解决方案**：
-  1. **针对现代 Fluent WebGUI (推荐)**：
-     - Windows 11 已默认内置 WebView2 Runtime；
-     - 若为 Windows 10 或精简版系统，请前往微软官方下载并安装 Evergreen WebView2 独立安装包；
-  2. **针对 PyQt6 桌面版**：
-     - 安装 GUI 控件依赖：
+  1. **安装轻量 GUI 桥接依赖**：
+     `ash
+     pip install pywebview
+     `
+  2. **确保系统具备 WebView2 运行时**：
+     - Windows 11 已默认内置 WebView2 Runtime，开箱即用；
+     - 若为精简版或 Windows 10 系统，请前往微软官方下载安装 [Evergreen WebView2 Bootstrapper](https://developer.microsoft.com/en-us/microsoft-edge/webview2/)；
+  3. **一键降级纯浏览器预览模式**：
+     - 若当前开发环境暂未安装 WebView2，可直接添加 --browser 标志以系统默认浏览器无缝打开：
        `ash
-       pip install PyQt6 PyQt-Fluent-Widgets pywebview
-       `
-     - 运行启动命令：
-       `ash
-       wx-h5 gui
+       python examples/supabase_gui/app.py --browser
        `
 
 ---

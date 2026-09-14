@@ -136,33 +136,24 @@ pip install -e .
 <a id="gui"></a><a id="图形界面"></a><a id="gui启动指南"></a>
 ## 🖥️ 图形交互界面 (GUI) 启动指南
 
-除了命令行 CLI 工具外，本项目提供了两种交互友好的桌面可视化客户端，满足不同操作偏好：
+除了强大的命令行 CLI 工具外，本项目提供了开箱即用的现代桌面可视化客户端：
 
-### 1. 现代 Fluent WebGUI (强烈推荐 / 基于 WebView2 硬件加速)
+### 现代 Fluent 桌面工作台 (基于 WebView2 硬件加速)
 采用微软 Fluent Design / Supabase 现代暗黑极简卡片视觉规范，内置多标签页路由：
 - **实时运行日志**：集成终端日志双向中继流，提供 **`[复制全部日志]`**、**`[打开本地日志]`**、**`[定位日志目录]`** 一键物理操作；
 - **全日志物理落盘**：日志实时安全同步存盘至本地 `records/logs/console_stream.log`；
 - **可视化调试与反混淆**：一键拉起透明代理注入、AST 深度解混淆与模块解包；
 - **内置合规与开源鸣谢**：直接内置开源依赖仓库链接、防倒卖免责声明与 FAQ 排障。
 
-**启动命令**：
+**启动方式**：
 ```bash
-python examples/supabase_gui/app.py
-```
-> *环境要求：Windows 10/11（Windows 11 自带 WebView2；Win10 用户需确保已安装 Microsoft Edge WebView2 运行时）。*
-
-### 2. PyQt6 Fluent 传统桌面版
-针对传统桌面应用开发者的原生 Qt6 界面，支持深色/浅色主题自适应与标准 Fluent 组件。
-
-**启动命令**：
-```bash
-# 方式 A：通过 CLI 快捷子命令启动
+# 方式 A：通过 CLI 命令一键唤起
 wx-h5 gui
 
-# 方式 B：直接运行模块入口
-python -m wechat_h5_devtools.gui.main_window
+# 方式 B：直接执行脚本入口
+python examples/supabase_gui/app.py
 ```
-> *依赖安装：需先执行 `pip install PyQt6 PyQt-Fluent-Widgets pywebview` 安装界面拓展组件。*
+> *环境要求：Windows 10/11（Windows 11 自带 WebView2 运行时；Win10 用户需确保已安装 Microsoft Edge WebView2 运行时）。*
 
 ---
 

@@ -46,7 +46,7 @@ pip install -r requirements.txt
 pip install -e .
 
 # 5. 安装 GUI 扩展依赖 (若需调试桌面客户端)
-pip install PyQt6 PyQt-Fluent-Widgets pywebview
+pip install pywebview
 `
 
 ### 3. 环境就绪诊断验证
@@ -85,7 +85,7 @@ wechat_h5_devtools/
 │   ├── project_dumper.py      # Webpack 异步分包递归递归提取器
 │   ├── sourcemap_rebuilder.py # SourceMap 还原原始 Vue/TS 源码工程
 │   └── api_analyzer.py        # 全域 API 路由、凭据与国密算法静态提取器
-├── gui/                       # PyQt6 传统桌面客户端
+├── gui/                       # 桌面 GUI 交互组件 (Modern Fluent WebGUI / pywebview)
 ├── utils/                     # 通用工具集 (日志落盘、路径解析)
 └── resources/config/          # 各代微信内核特征码与虚表地址池 (addresses.*.json)
 `
@@ -102,7 +102,8 @@ wechat_h5_devtools/
    %AppData%\Tencent\xwechat\XPlugin\Plugins\RadiumWMPF
    `
 2. 查看最新生成的纯数字文件夹（如 25560、26010），该数字即为当前生效的 KERNEL_VERSION；
-3. 检查其内部的核心渲染动态库：adium.dll 或 wmpf.dll，以及主程序 WeChatAppEx.exe。
+3. 检查其内部的核心渲染动态库：
+adium.dll 或 wmpf.dll，以及主程序 WeChatAppEx.exe。
 
 ### 第二步：分析新内核的启动命令行特征
 微信 4.x 采用多进程 Chromium 沙箱。在新版微信中打开任意公众号网页，在 PowerShell 中执行命令抓取其活跃子进程参数：
@@ -130,7 +131,8 @@ Get-CimInstance Win32_Process -Filter "Name LIKE 'We%'" | Select-Object ProcessI
 `
 
 ### 第五步：建立新版本特征映射池配置
-在 esources/config/ 目录下新建 ddresses.<新内核版本号>.json（例如 ddresses.26010.json）：
+在 
+esources/config/ 目录下新建 ddresses.<新内核版本号>.json（例如 ddresses.26010.json）：
 `json
 {
   "kernel_version": "26010",
@@ -161,7 +163,8 @@ wx-h5 hook
 
 | 故障场景与现象 | 根因分类 | 核心排障文件与代码位置 | 自愈排障与定位步骤 |
 | :--- | :--- | :--- | :--- |
-| **1. 启动报拒绝访问 (Access is denied / os error 5)** | Windows UAC 完整性级别隔离 | wechat_h5_devtools/injector/process_hooker.py | 微信以管理员权限启动时，普通终端无权附加 OpenProcess。<br>1. 右键终端以**“管理员身份运行”**；<br>2. 编译 EXE 时强制注入 equireAdministrator 清单。 |
+| **1. 启动报拒绝访问 (Access is denied / os error 5)** | Windows UAC 完整性级别隔离 | wechat_h5_devtools/injector/process_hooker.py | 微信以管理员权限启动时，普通终端无权附加 OpenProcess。<br>1. 右键终端以**“管理员身份运行”**；<br>2. 编译 EXE 时强制注入 
+equireAdministrator 清单。 |
 | **2. 启动代理后微信内置网页无法联网** | 端口冲突或 HTTPS 根证书未受信 | wechat_h5_devtools/injector/proxy_injector.py | 1. 运行 
 etstat -ano \| findstr 8899，若冲突改用 wx-h5 proxy --port 8999；<br>2. 双击安装 ~/.mitmproxy/mitmproxy-ca-cert.cer 证书至**受信任的根证书颁发机构**。 |
 | **3. 微信大版本升级后 Hook 无反应** | 内核子进程名变更或虚表偏移失效 | wechat_h5_devtools/injector/scripts/hook_inapp.js | 运行 wx-h5 inspect --list 打印当前所有渲染 PID，比对 hook_inapp.js 中的进程监听名单；执行第三章 SOP 提取新特征码。 |

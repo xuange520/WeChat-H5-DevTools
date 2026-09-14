@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WeChat H5 DevTools | Supabase Dark Edition</title>
+  <title>WeChat-H5-DevTools | Supabase Dark Emerald Edition</title>
+  <link rel="icon" type="image/png" href="logo.png" />
+  <link rel="shortcut icon" href="logo.ico" />
   <style>
     :root {
       --canvas: #121212;
@@ -221,8 +223,8 @@
   <!-- 顶部状态栏 Header -->
   <header>
     <div class="brand-group">
-      <div class="brand-logo">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+      <div class="brand-logo" style="padding:2px;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+        <img src="logo.png" alt="Logo" style="width:24px;height:24px;object-fit:contain;border-radius:4px;" />
       </div>
       <div class="brand-title">
         WeChat-H5-DevTools
@@ -232,13 +234,13 @@
 
     <div class="header-status">
       <div class="status-capsule">
-        <div class="pulse-dot"></div>
-        <span>WeChat 4.0.5</span>
-        <span style="color:var(--ink-mute)">PID:25560</span>
+        <div class="pulse-dot" id="headerDot"></div>
+        <span id="headerWechatVer">WeChat 感知中...</span>
+        <span style="color:var(--ink-mute)" id="headerWechatPid">PID: --</span>
       </div>
       <div class="status-capsule">
-        <span style="color:var(--primary)">RadiumWMPF</span>
-        <span style="color:var(--ink-mute)">x64</span>
+        <span style="color:var(--primary)" id="headerKernel">RadiumWMPF</span>
+        <span style="color:var(--ink-mute)" id="headerArch">x64</span>
       </div>
       <div class="status-capsule">
         <span>Proxy</span>
@@ -323,10 +325,10 @@
               <span class="metric-title">微信宿主进程</span>
               <svg class="metric-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
             </div>
-            <div class="metric-value">PID 25560</div>
-            <div class="metric-badge">
+            <div class="metric-value" id="valWechatPid">PID --</div>
+            <div class="metric-badge" id="valWechatSub">
               <div class="pulse-dot" style="width:5px;height:5px;"></div>
-              WeChat.exe (x64)
+              <span id="valWechatExe">微信检测中...</span>
             </div>
           </div>
 
@@ -384,7 +386,7 @@
         <div class="section-card">
           <div class="card-header-bar">
             <span class="card-header-title">当前微信检测拓扑 (Process Matrix)</span>
-            <span style="font-size:12px;color:var(--ink-mute);">共捕获 1 个主进程 · 3 个渲染沙箱</span>
+            <span style="font-size:12px;color:var(--ink-mute);" id="matrixSummary">动态感知扫描中...</span>
           </div>
           <div class="table-container">
             <table>
@@ -398,30 +400,14 @@
                   <th>状态</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody id="processMatrixBody">
                 <tr>
-                  <td style="color:var(--ink);font-weight:500;">WeChat.exe</td>
-                  <td>25560</td>
-                  <td>x86_64</td>
-                  <td>WeChat 4.0.5 Host</td>
-                  <td><code>0x7FFBC1200000</code></td>
-                  <td><span class="badge-supabase" style="background:rgba(62,207,142,0.15)">已挂钩</span></td>
-                </tr>
-                <tr>
-                  <td style="color:var(--ink);font-weight:500;">WeChatAppEx.exe</td>
-                  <td>14280</td>
-                  <td>x86_64</td>
-                  <td>RadiumWMPF Chromium 122</td>
-                  <td><code>DevToolsActivePort</code></td>
-                  <td><span class="badge-supabase">监听中</span></td>
-                </tr>
-                <tr>
-                  <td style="color:var(--ink);font-weight:500;">WeChatUtility.exe</td>
-                  <td>19924</td>
-                  <td>x86_64</td>
-                  <td>Network Sandbox</td>
-                  <td><code>Transparent Socks5</code></td>
-                  <td><span class="badge-supabase">接管完成</span></td>
+                  <td style="color:var(--ink);font-weight:500;">微信进程扫描中...</td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td>-</td>
+                  <td><code>-</code></td>
+                  <td><span class="badge-supabase">检测中</span></td>
                 </tr>
               </tbody>
             </table>
@@ -661,7 +647,7 @@
             <div class="log-line">
               <span class="log-time">[19:30:02]</span>
               <span class="log-tag tag-success">[PASS]</span>
-              <span class="log-msg">已成功接管微信 4.0.5 主进程 (PID: 25560)</span>
+              <span class="log-msg" id="terminalInitMsg">微信宿主进程感知与版本动态提取中...</span>
             </div>
             <div class="log-line">
               <span class="log-time">[19:30:03]</span>
@@ -1104,10 +1090,78 @@
       appendLog("[SANDBOX]", "新增映射: *://res.wx.qq.com/... -> D:/output/mock.js", "tag-info");
     }
 
-    function refreshStatus() {
-      showToast("微信内核状态检测正常");
-      appendLog("[INFO]", "心跳轮询: PID 25560 状态健壮，RTT 2ms", "tag-info");
+    function syncSystemStatus(data) {
+      if (!data) return;
+
+      // 1. 顶部状态栏胶囊
+      const verEl = document.getElementById('headerWechatVer');
+      const pidEl = document.getElementById('headerWechatPid');
+      const kernelEl = document.getElementById('headerKernel');
+      const archEl = document.getElementById('headerArch');
+      if (verEl) verEl.innerText = data.is_running ? `WeChat ${data.wechat_version}` : `WeChat ${data.wechat_version || '未运行'}`;
+      if (pidEl) pidEl.innerText = data.wechat_pid ? `PID: ${data.wechat_pid}` : '未运行';
+      if (kernelEl) kernelEl.innerText = data.kernel || 'RadiumWMPF';
+      if (archEl) archEl.innerText = data.arch || 'x64';
+
+      // 2. 核心指标卡片
+      const cardPid = document.getElementById('valWechatPid');
+      const cardExe = document.getElementById('valWechatExe');
+      if (cardPid) cardPid.innerText = data.wechat_pid ? `PID ${data.wechat_pid}` : '未运行';
+      if (cardExe) cardExe.innerText = `${data.process_name || 'WeChat.exe'} (${data.arch || 'x64'})`;
+
+      // 3. 进程拓扑矩阵表格
+      const summaryEl = document.getElementById('matrixSummary');
+      const tbody = document.getElementById('processMatrixBody');
+      if (summaryEl) {
+        summaryEl.innerText = data.is_running
+          ? `共捕获 ${data.wechat_count || 1} 个微信进程 · ${data.renderer_count || 0} 个渲染沙箱`
+          : '微信当前未运行 (已探测到本地版本)';
+      }
+      if (tbody && data.process_matrix && data.process_matrix.length > 0) {
+        tbody.innerHTML = data.process_matrix.map(row => `
+          <tr>
+            <td style="color:var(--ink);font-weight:500;">${row.name}</td>
+            <td>${row.pid}</td>
+            <td>${row.arch}</td>
+            <td>${row.kernel}</td>
+            <td><code>${row.entry}</code></td>
+            <td><span class="badge-supabase" style="${row.is_main ? 'background:rgba(62,207,142,0.15)' : ''}">${row.status}</span></td>
+          </tr>
+        `).join('');
+      }
+
+      // 4. 更新终端初始日志
+      const initLog = document.getElementById('terminalInitMsg');
+      if (initLog && data.status_text) {
+        initLog.innerText = data.status_text;
+      }
     }
+
+    function refreshStatus() {
+      if (window.pywebview && window.pywebview.api && window.pywebview.api.refresh_system_status) {
+        window.pywebview.api.refresh_system_status().then(res => {
+          syncSystemStatus(res);
+          const pidStr = res.wechat_pid ? `PID ${res.wechat_pid}` : '未运行';
+          showToast(`已刷新微信拓扑: WeChat ${res.wechat_version || ''} (${pidStr})`);
+          appendLog("[STATUS]", `内核拓扑感知同步成功: ${res.status_text || ''}`, "tag-success");
+        }).catch(err => {
+          showToast("刷新状态异常");
+        });
+      } else {
+        showToast("微信内核拓扑检测已就绪");
+        appendLog("[INFO]", "心跳轮询: 进程通信与桥接信道正常", "tag-info");
+      }
+    }
+
+    // 页面加载完成后立即拉取宿主机微信真实状态
+    function initSystemInspection() {
+      if (window.pywebview && window.pywebview.api && window.pywebview.api.get_system_status) {
+        window.pywebview.api.get_system_status().then(syncSystemStatus).catch(() => {});
+      }
+    }
+    document.addEventListener('DOMContentLoaded', initSystemInspection);
+    window.addEventListener('pywebviewready', initSystemInspection);
+    setTimeout(initSystemInspection, 300);
 
     function appendLog(tag, msg, tagClass) {
       const body = document.getElementById('terminalBody');
