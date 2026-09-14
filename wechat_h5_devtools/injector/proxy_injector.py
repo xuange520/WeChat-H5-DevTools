@@ -100,8 +100,21 @@ class ProxyHTTPHandler(http.server.BaseHTTPRequestHandler):
             </div>
         </div>
         <p style="font-size: 14px; line-height: 1.6; color: #94A3B8;">
-            报告长官！当前内置浏览器网页已成功激活移动端调试套件。请看屏幕<strong>右下角</strong>，已常驻显示官方绿色 <strong>vConsole</strong> 悬浮按钮！
+            报告长官！当前内置浏览器已成功激活移动端调试套件。请看屏幕<strong>右下角</strong>，已常驻显示官方绿色 <strong>vConsole</strong> 悬浮按钮！
         </p>
+
+        <!-- 公众号推文注入输入框 -->
+        <div style="background: #0F172A; border-radius: 10px; padding: 14px; margin: 16px 0; border: 1px solid #334155;">
+            <div style="font-size: 13px; color: #38BDF8; font-weight: bold; margin-bottom: 6px;">[公众号推文一键注入通道]</div>
+            <p style="font-size: 12px; color: #94A3B8; margin-top: 0; margin-bottom: 8px; line-height: 1.5;">
+                由于微信客户端对官方推文 (mp.weixin.qq.com) 走 HTTPS 强制直连，将推文链接粘贴在下方，即可在微信内置浏览器中以原文呈现并强制挂载绿色 vConsole！
+            </p>
+            <input id="articleUrl" type="text" placeholder="粘贴公众号推文链接 (如: https://mp.weixin.qq.com/s/...)" style="width: 100%; box-sizing: border-box; padding: 10px; border-radius: 8px; border: 1px solid #475569; background: #1E293B; color: #FFFFFF; font-size: 13px; margin-bottom: 8px;" />
+            <button onclick="var u = document.getElementById('articleUrl').value.trim(); if(u) {{ location.href = '/read?url=' + encodeURIComponent(u); }} else {{ alert('请先粘贴公众号推文链接！'); }}" style="width: 100%; background: #2563EB; color: white; border: none; padding: 10px; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer;">
+                一键打开推文并强制注入 vConsole
+            </button>
+        </div>
+
         <div style="background: #0F172A; border-radius: 10px; padding: 14px; margin: 16px 0; border: 1px solid #334155;">
             <div style="font-size: 13px; color: #38BDF8; font-weight: bold; margin-bottom: 6px;">[调试实测指南]</div>
             <div style="font-size: 13px; color: #CBD5E1; line-height: 1.6;">
@@ -123,6 +136,43 @@ class ProxyHTTPHandler(http.server.BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(html)
             return
+
+        # 3. 微信公众号推文一键中继与 vConsole 注入器 (/read?url=...)
+        if self.path.startswith("/read?url=") or "/read?url=" in self.path:
+            import urllib.parse
+            query = urllib.parse.urlsplit(self.path).query
+            params = urllib.parse.parse_qs(query)
+            target_url = params.get("url", [""])[0]
+            if target_url:
+                try:
+                    headers = {
+                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 MicroMessenger/7.0.20.1781(0x6700143B) NetType/WIFI WindowsWechat(0x63090a13) XWEB/25510",
+                        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+                        "Accept-Language": "zh-CN,zh;q=0.9",
+                    }
+                    req = urllib.request.Request(target_url, headers=headers)
+                    with urllib.request.urlopen(req, timeout=10) as resp:
+                        content_type = resp.headers.get("Content-Type", "text/html; charset=utf-8")
+                        data = resp.read()
+
+                        # 自动注入 vConsole
+                        if b"<head>" in data:
+                            data = data.replace(b"<head>", b"<head>" + VCONSOLE_INJECTION_SNIPPET, 1)
+                        elif b"<body>" in data:
+                            data = data.replace(b"<body>", b"<body>" + VCONSOLE_INJECTION_SNIPPET, 1)
+                        else:
+                            data = VCONSOLE_INJECTION_SNIPPET + data
+
+                        self.send_response(200)
+                        self.send_header("Content-Type", content_type)
+                        self.send_header("Content-Length", str(len(data)))
+                        self.send_header("Access-Control-Allow-Origin", "*")
+                        self.end_headers()
+                        self.wfile.write(data)
+                        return
+                except Exception as e:
+                    self.send_error(500, f"Proxy Article Error: {e}")
+                    return
 
         url = self.path
         if not url.startswith("http://") and not url.startswith("https://"):
