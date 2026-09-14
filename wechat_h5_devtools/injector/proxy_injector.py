@@ -187,7 +187,7 @@ class ProxyHTTPHandler(http.server.BaseHTTPRequestHandler):
                 mime_type, _ = mimetypes.guess_type(str(local_override))
                 mime_type = mime_type or "application/octet-stream"
 
-                log_info(f"[bold green]⚡ [Local Overrides 实时替换][/bold green] {url} -> [cyan]{local_override}[/cyan]")
+                log_info(f"[bold green][PASS] [Local Overrides 实时替换][/bold green] {url} -> [cyan]{local_override}[/cyan]")
                 self.send_response(200)
                 self.send_header("Content-Type", mime_type)
                 self.send_header("Content-Length", str(len(data)))
@@ -289,7 +289,7 @@ class ProxyInjector:
         ProxyHTTPHandler.override_dir = self.override_dir
 
         if self.override_dir:
-            log_step(f"⚡ [Local Overrides 模式已激活] 正在监听并映射本地目录: [bold cyan]{self.override_dir}[/bold cyan]")
+            log_step(f"[PASS] [Local Overrides 模式已激活] 正在监听并映射本地目录: [bold cyan]{self.override_dir}[/bold cyan]")
             log_info("当线上 H5 网页请求 JS/CSS/HTML 时，同名文件将直接被本地文件无感替换！")
         
         log_step(f"正在启动代理网关服务: 127.0.0.1:{self.port}...")

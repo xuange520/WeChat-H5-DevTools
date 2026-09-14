@@ -23,23 +23,73 @@ class ProcessHooker:
             log_error("未检测到 frida 依赖，请先执行: pip install frida")
             return False
 
+        hook_js_path = Path(__file__).parent / "scripts" / "hook_inapp.js"
+        with open(hook_js_path, "r", encoding="utf-8") as f:
+            hook_code = f.read()
+
+        import psutil
+        running_weixin = [p for p in psutil.process_iter(['pid', 'name']) if p.info['name'] in ['WeChat.exe', 'Weixin.exe']]
+
+        # 模式 1：热附加模式 (微信已在运行，不退出微信，不影响用户正常登录与聊天！)
+        if running_weixin:
+            log_step(f"检测到微信主程序已在运行中 (发现 {len(running_weixin)} 个微信进程)！")
+            log_info("正在执行智能热附加 (免重新登录/无需杀主进程)...")
+
+            # 仅清理旧的渲染子进程 WeChatAppEx，以便微信下次点击推文时以新参数拉起全新的渲染器
+            running_renderers = [p for p in psutil.process_iter(['pid', 'name']) if p.info['name'] in ['WeChatAppEx.exe', 'WeixinExt.exe']]
+            if running_renderers:
+                log_step(f"正在重置 {len(running_renderers)} 个旧渲染子进程以激活最新调试参数...")
+                for p in running_renderers:
+                    try:
+                        p.kill()
+                    except Exception:
+                        pass
+                time.sleep(0.5)
+
+            sessions = []
+            for p in running_weixin:
+                pid = p.info['pid']
+                try:
+                    session = frida.attach(pid)
+                    script = session.create_script(hook_code)
+
+                    def on_message(message, data, current_pid=pid):
+                        if message.get("type") == "send":
+                            log_info(f"[PID {current_pid}] {message.get('payload', '')}")
+                        elif message.get("type") == "error":
+                            log_warn(f"Frida 告警: {message.get('description', '')}")
+
+                    script.on("message", on_message)
+                    script.load()
+                    sessions.append(session)
+                except Exception:
+                    pass
+
+            if not sessions:
+                log_error("热附加微信进程失败，请尝试以管理员身份运行终端！")
+                return False
+
+            log_step("[PASS] [微信全局推文与内置浏览器 Hook 挂载完毕！]")
+            log_info("现在长官无需输入任何网址，只要在微信里点击任意公众号推文或网页，系统将全自动拦截并强制注入 vConsole！")
+            log_info("提示: 保持本终端运行即可生效，按 Ctrl + C 可随时退出挂载。")
+
+            try:
+                while True:
+                    time.sleep(1)
+            except KeyboardInterrupt:
+                log_warn("已收到中断信号，正在卸载 Hook 并退出...")
+                for s in sessions:
+                    try:
+                        s.detach()
+                    except Exception:
+                        pass
+                return True
+
+        # 模式 2：冷启动模式 (微信未运行，自动拉起并注入)
         wechat_exe = Path(custom_wechat_path) if custom_wechat_path else self.finder.get_wechat_path()
         if not wechat_exe or not wechat_exe.exists():
             log_error("未能自动定位到微信可执行文件，请使用 --path 参数指定微信路径 (如: Weixin.exe)")
             return False
-
-        # 检查是否已有微信进程在运行
-        import psutil
-        running_wechat = [p for p in psutil.process_iter(['pid', 'name']) if p.info['name'] in ['WeChat.exe', 'Weixin.exe', 'WeixinExt.exe', 'WeChatAppEx.exe']]
-        if running_wechat:
-            log_warn(f"检测到当前已有 {len(running_wechat)} 个微信相关进程正在运行。")
-            log_step("正在自动终止旧微信进程以确保 Hook 探针能够冷启动挂载...")
-            for p in running_wechat:
-                try:
-                    p.kill()
-                except Exception:
-                    pass
-            time.sleep(1)
 
         log_info(f"匹配到微信主执行文件: {wechat_exe}")
         log_step("正在通过 Frida 调试引擎 Spawn 启动微信主进程...")
@@ -48,11 +98,6 @@ class ProcessHooker:
             device = frida.get_local_device()
             pid = device.spawn(str(wechat_exe))
             log_info(f"已创建微信挂起进程 PID: {pid}")
-
-            # 加载 hook 脚本
-            hook_js_path = Path(__file__).parent / "scripts" / "hook_inapp.js"
-            with open(hook_js_path, "r", encoding="utf-8") as f:
-                hook_code = f.read()
 
             session = device.attach(pid)
             script = session.create_script(hook_code)
@@ -69,12 +114,17 @@ class ProcessHooker:
             log_step("恢复微信进程执行...")
             device.resume(pid)
 
-            log_step("正在等待微信子进程完成初始化与参数挂载 (等待 6 秒)...")
-            time.sleep(6)
+            log_step("[PASS] [微信全局推文与内置浏览器 Hook 挂载完毕！]")
+            log_info("现在长官无需输入任何网址，只要在微信里点击任意公众号推文或网页，系统将全自动拦截并强制注入 vConsole！")
+            log_info("提示: 保持本终端运行即可生效，按 Ctrl + C 可随时退出挂载。")
 
-            session.detach()
-            log_info("注入完成！微信内置浏览器已处于开发者调试就绪状态。")
-            return True
+            try:
+                while True:
+                    time.sleep(1)
+            except KeyboardInterrupt:
+                log_warn("已收到中断信号，正在卸载 Hook 并退出...")
+                session.detach()
+                return True
 
         except Exception as e:
             log_error(f"注入过程中发生异常: {e}")
