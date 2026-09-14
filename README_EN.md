@@ -11,7 +11,7 @@
 [![Frida 17+](https://img.shields.io/badge/Frida-17+-FF69B4?logo=frida&logoColor=white)](https://frida.re/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS-blue.svg)](https://github.com/)
 
-[中文文档](./README.md) · [Matrix](#matrix) · [Screenshots](#screenshots) · [Features](#features) · [Quickstart](#quickstart) · [Architecture](#architecture) · [Sponsor](#sponsor) · [License](#license)
+[中文文档](./README.md) · [Matrix](#matrix) · [Screenshots](#screenshots) · [Features](#features) · [Quickstart](#quickstart) · [Sponsor](#sponsor) · [License](#license)
 
 </div>
 
@@ -111,25 +111,6 @@ pip install -e .
   wx-h5 scan "./output/site_deobfuscated" -e report.md
   ```
 
----
-
-<a id="architecture"></a>
-## 🏗️ Architecture
-
-```
-+------------------------------------------------------------------------+
-|                   WeChat-H5-DevTools (Unified Engine)                  |
-+------------------+----------------------+------------------------------+
-| 1. inapp_injector| 2. stealth_sandbox   | 3. asset_extractor           |
-| (WeChat Hook)    | (Stealth F12 Sandbox)| (Full-Site Source Reversing) |
-+------------------+----------------------+------------------------------+
-| * Process Detect | * Multi-OS WeChat UA | * HTML/DOM Deep Parser       |
-| * Frida 17+ Hook | * WeixinJSBridge Mock| * Async Webpack Chunk Dumper |
-| * Proxy Injector | * JSSDK 1.6.0 Mock   | * SourceMap Reconstruction   |
-| * vConsole Ball  | * Chrome DevTools F12| * Webcrack AST Deobfuscator  |
-| * Local Overrides|                      | * Full-Scale API & SM2/3/4   |
-+------------------+----------------------+------------------------------+
-```
 
 ---
 

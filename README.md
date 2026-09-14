@@ -12,7 +12,7 @@
 [![Frida 17+](https://img.shields.io/badge/Frida-17+-FF69B4?logo=frida&logoColor=white)](https://frida.re/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS-blue.svg)](https://github.com/)
 
-[核心功能](#features) · [实测效果](#screenshots) · [快速上手](#quickstart) · [命令行指南](#cli) · [实战工作流](#workflows) · [系统架构](#architecture) · [兼容矩阵](#matrix) · [常见问题](#faq) · [赞助支持](#sponsor) · [免责声明](#disclaimer)
+[核心功能](#features) · [实测效果](#screenshots) · [快速上手](#quickstart) · [命令行指南](#cli) · [实战工作流](#workflows) · [兼容矩阵](#matrix) · [常见问题](#faq) · [赞助支持](#sponsor) · [免责声明](#disclaimer)
 
 </div>
 
@@ -217,25 +217,6 @@ wx-h5 scan "./output/wx1363195c4fb75cfc/344_deobfuscated" --export audit_report.
 * **凭据与敏感字段**：识别微信 AppID、插件依赖 ID、业务 Token 与请求头；
 * **业务 API 清单**：提纯去重全量 RESTful 与 RPC 路由接口。
 
----
-
-<a id="architecture"></a><a id="系统架构"></a>
-## 🏗️ 系统架构
-
-```
-+------------------------------------------------------------------------+
-|                   WeChat-H5-DevTools (统一调度中枢)                    |
-+------------------+----------------------+------------------------------+
-| 1. inapp_injector| 2. stealth_sandbox   | 3. asset_extractor           |
-| (微信内置注入引擎) | (外部高保真沙箱引擎) | (全站源码逆向提取引擎)       |
-+------------------+----------------------+------------------------------+
-| * 进程自适应探测 | * 全平台微信 UA 矩阵 | * HTML/DOM 深度解析器        |
-| * Frida 17+ 挂载 | * WeixinJSBridge Mock| * Webpack 异步分包递归器     |
-| * 透明代理注头   | * JSSDK 1.6.0 挡板系统| * SourceMap 源码目录还原     |
-| * vConsole 浮动窗| * 原生 Chrome 满血拉起| * Webcrack AST 解混淆与解包  |
-| * Local Overrides|                      | * 全域 API 与国密特征静态审计|
-+------------------+----------------------+------------------------------+
-```
 
 ---
 
