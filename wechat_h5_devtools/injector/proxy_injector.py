@@ -15,12 +15,24 @@ from pathlib import Path
 
 VCONSOLE_INJECTION_SNIPPET = """
 <!-- WeChat-H5-DevTools Injected vConsole -->
-<script src="https://unpkg.com/vconsole/dist/vconsole.min.js"></script>
+<script src="http://127.0.0.1:8899/__vconsole__.js"></script>
 <script>
-    try {
-        window.vConsole = new VConsole({ theme: 'dark' });
-        console.log("%c[WeChat-H5-DevTools] vConsole 移动端调试器已成功激活！", "color: #07c160; font-weight: bold; font-size: 14px;");
-    } catch(e) {}
+    if (typeof VConsole === 'undefined') {
+        var _s = document.createElement('script');
+        _s.src = 'https://cdn.bootcdn.net/ajax/libs/vConsole/3.15.1/vconsole.min.js';
+        document.head.appendChild(_s);
+    }
+    function _initVConsole() {
+        if (typeof VConsole !== 'undefined') {
+            if (!window.vConsole) {
+                window.vConsole = new VConsole({ theme: 'dark' });
+                console.log("%c[WeChat-H5-DevTools] vConsole 移动端调试器已成功激活！", "color: #07c160; font-weight: bold; font-size: 14px;");
+            }
+        } else {
+            setTimeout(_initVConsole, 50);
+        }
+    }
+    _initVConsole();
 </script>
 """.encode("utf-8")
 
@@ -55,6 +67,63 @@ class ProxyHTTPHandler(http.server.BaseHTTPRequestHandler):
         return None
 
     def do_GET(self):
+        # 1. 响应本地极速离线 vconsole.min.js (0ms 零外网依赖)
+        if self.path.endswith("/__vconsole__.js") or self.path == "/__vconsole__.js":
+            vconsole_path = Path(__file__).parent / "assets" / "vconsole.min.js"
+            if vconsole_path.exists():
+                data = vconsole_path.read_bytes()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/javascript")
+                self.send_header("Content-Length", str(len(data)))
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.end_headers()
+                self.wfile.write(data)
+                return
+
+        # 2. 内置开箱即用微信 H5 调试测试靶场 (访问 http://127.0.0.1:8899/test 或 /)
+        if self.path in ["/", "/test", "/demo", "/test.html"] or self.path.endswith(("/test", "/demo", "/test.html")):
+            html = f"""<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>WeChat-H5-DevTools 调试验证靶场</title>
+    {VCONSOLE_INJECTION_SNIPPET.decode('utf-8')}
+</head>
+<body style="margin: 0; padding: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0F172A; color: #F8FAFC;">
+    <div style="max-width: 480px; margin: 20px auto; background: #1E293B; border-radius: 16px; padding: 24px; border: 1px solid #334155; box-shadow: 0 10px 25px rgba(0,0,0,0.4);">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+            <div style="width: 42px; height: 42px; border-radius: 10px; background: #07C160; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; color: white;">&lt;/&gt;</div>
+            <div>
+                <h3 style="margin: 0; font-size: 18px; color: #FFFFFF;">WeChat-H5-DevTools</h3>
+                <span style="font-size: 12px; color: #07C160; font-weight: 500;">vConsole 调试器已强制注入就绪</span>
+            </div>
+        </div>
+        <p style="font-size: 14px; line-height: 1.6; color: #94A3B8;">
+            报告长官！当前内置浏览器网页已成功激活移动端调试套件。请看屏幕<strong>右下角</strong>，已常驻显示官方绿色 <strong>vConsole</strong> 悬浮按钮！
+        </p>
+        <div style="background: #0F172A; border-radius: 10px; padding: 14px; margin: 16px 0; border: 1px solid #334155;">
+            <div style="font-size: 13px; color: #38BDF8; font-weight: bold; margin-bottom: 6px;">[调试实测指南]</div>
+            <div style="font-size: 13px; color: #CBD5E1; line-height: 1.6;">
+                • 点击右下角绿色 <strong>vConsole</strong> 打开面板<br>
+                • 点击下方按钮向控制台输出实时日志<br>
+                • 在 Network 中查看实时网络请求瀑布流
+            </div>
+        </div>
+        <button onclick="console.log('[DevTools 测试成功]', '时间戳: ' + new Date().toLocaleTimeString(), '当前环境: ' + navigator.userAgent); alert('测试日志已发送至 vConsole！请点击右下角绿色按钮展开查看。');" style="width: 100%; background: #07C160; color: white; border: none; padding: 12px; border-radius: 10px; font-size: 15px; font-weight: bold; cursor: pointer;">
+            点击向 vConsole 发送测试日志
+        </button>
+    </div>
+</body>
+</html>""".encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(html)))
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(html)
+            return
+
         url = self.path
         if not url.startswith("http://") and not url.startswith("https://"):
             self.send_error(400, "Bad URL")
