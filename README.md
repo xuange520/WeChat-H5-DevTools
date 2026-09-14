@@ -241,6 +241,101 @@ wx-h5 scan "./output/wx1363195c4fb75cfc/344_deobfuscated" --export audit_report.
 > **解答**：工具沙箱已内置 `getBrandWCPayRequest`（微信支付）、`getLocation`（定位）、`scanQRCode`（扫码）等 30+ 常见接口。若遇到极其私有的微信定制 API，可直接在 `wechat_h5_devtools/sandbox/polyfills/weixin_bridge.js` 中按需扩展对应 Mock 响应。
 </details>
 
+<details>
+<summary><strong>Q4 [代理失效排障]: 启动透明代理后，微信内置浏览器无法联网或提示“代理服务器拒绝连接”？</strong></summary>
+
+> **解答**：此现象 100% 由本地端口抢占、Windows 系统代理覆写或根证书信任链路受阻所致，请按以下三步快速排查：
+> 1. **排查端口冲突**：默认代理端口 `8899` 可能已被其他工具（如 Clash、v2rayN、Fiddler、Charles）抢占。在终端执行 `netstat -ano | findstr 8899`，若发现已被其他 PID 监听，使用 `wx-h5 proxy --port 8999` 指定闲置端口运行；
+> 2. **微信独立网络沙箱检查**：微信 4.x 将网络通信独立收拢至 `WeChatUtility.exe` / `WeChatAppEx.exe`，某些全局代理客户端会覆写系统 PAC 脚本导致流量旁路绕过。进入 Windows **“设置 -> 网络和 Internet -> 代理”**，确认手动代理服务器地址正确指向 `127.0.0.1:8899`，并关闭第三方 VPN 的虚拟网卡 TUN 模式；
+> 3. **HTTPS 根证书受信任校验**：若微信内置浏览器报 `NET::ERR_CERT_AUTHORITY_INVALID`，说明微信沙箱拦截了自签名 HTTPS 握手。请将项目生成或 mitmproxy 的根证书（`~/.mitmproxy/mitmproxy-ca-cert.cer`）双击安装至 Windows 的 **“受信任的根证书颁发机构”** 物理存储区。
+</details>
+
+<details>
+<summary><strong>Q5 [内核跨版本脱钩原理]: 微信大版本升级（如 4.0/4.1 及 RadiumWMPF 内核变动）后，工具如何做到免适配稳定脱钩？</strong></summary>
+
+> **解答**：传统方案依赖硬编码静态内存偏移或特定启动参数（如旧版已失效的 `--xweb-enable-inspect=1`），微信小版本升级即全面失效。本项目采用 **“三层自适应脱钩与运行时签名扫描”** 架构：
+> 1. **物理层放弃静态偏移**：`wechat_h5_devtools/core/injector.py` 运行时对 `RadiumWMPF` / `WeChatAppEx.exe` 的 Chromium 虚表（VTable）、`DevToolsActivePort` 判断分支及 Blink 初始化逻辑进行动态特征码（Signature Mask）扫描，不依赖固定内存硬地址；
+> 2. **三级容灾多路挂载**：
+>    - **L1 动态进程拦截**：Frida 挂载宿主 `CreateProcessW` API，在底层派发渲染沙箱子进程瞬间无缝向命令行注入 `--remote-debugging-port` 与 `--headless=new` 调试开关；
+>    - **L2 协议管道热注入**：针对已在运行的微信进程，Hook `WeixinJSBridge` 消息派发泵，在网页 DOM 加载初期毫秒级调用 `document.createElement('script')` 追加官方 `vConsole` 节点；
+>    - **L3 透明网络层兜底**：无视任何客户端二进制结构，在代理响应中对 HTML/JS 文件执行流式 AST 注入，三层中任意一层生效即可确保 100% 调试就绪；
+> 3. **内核特征表增量进化**：项目内置 `addresses.<kernel_version>.json` 地址映射池（如已内置 25560 内核特征），新内核发布时仅需追加特征定义，无需重编译二进制。
+</details>
+
+<details>
+<summary><strong>Q6 [微信强缓存击穿]: 使用 Local Overrides 重定向后，刷新页面仍加载线上旧代码？</strong></summary>
+
+> **解答**：微信内置浏览器出于性能考量，对公众号与小程序 H5 启用了极度激进的 **Chromium 磁盘强缓存 (Disk Cache)** 与 HTTP 304 协商缓存，普通 F5 或点击刷新无法穿透缓存。请按以下方案实施彻底击穿：
+> 1. **方案 A（工具代理物理剥离缓存头）**：`wx-h5 sandbox` 与 `wx-h5 proxy` 内置了强缓存粉碎中间件，自动拦截上游响应并强制重写头信息：
+>    - 注入 `Cache-Control: no-cache, no-store, must-revalidate, max-age=0`
+>    - 注入 `Pragma: no-cache` 与 `Expires: 0`
+>    - 物理剥除 `ETag` 与 `If-Modified-Since` 标头，强制微信内核发起全量 200 请求；
+> 2. **方案 B（清除本地磁盘缓存文件）**：微信将渲染缓存保存在 `%APPDATA%\Tencent\WeChat\radium\web\cache` 或 `xwechat_files` 下。在注入成功的 vConsole 中点击 **“Storage” -> “Clear Cookies & Cache”**，或关闭微信后直接删除该目录；
+> 3. **方案 C（URL 动态时间戳破坏）**：在访问的目标 URL 末尾追加防缓存随机参数（如 `?_t=1726315890` 或 `&dev_bust=true`），迫使内核绕过 URL 缓存索引直接抓取重定向后的本地源码。
+</details>
+
+<details>
+<summary><strong>Q7 [多进程管线识别]: 任务管理器中存在数十个 WeChat 进程，工具如何精准锁定目标渲染进程？</strong></summary>
+
+> **解答**：微信 4.x 深度对齐了现代 Chromium 多进程沙箱模型，各进程分工高度隔离：
+> 1. **微信多进程角色全景**：
+>    - `WeChat.exe`：主界面 UI 与长连接通讯中枢（Broker 进程，不负责渲染 Web）；
+>    - `WeChatAppEx.exe` / `WeixinExt.exe`：RadiumWMPF 网页与小程序渲染沙箱（**工具的核心 Hook 目标**）；
+>    - `WeChatUtility.exe`：负责网络下载、崩溃转储与音视频编解码辅助管线；
+>    - `WeChatPlayer.exe`：多媒体播放器沙箱；
+> 2. **自适应管线识别器**：`wx-h5 hook` 启动后自动枚举当前用户会话的所有子进程，通过 Windows PEB (Process Environment Block) 探测命令行参数：
+>    - 命中 `--type=renderer` 与 `--enable-blink-features` 标识符；
+>    - 校验进程模块列表中是否已加载 `radium.dll` / `wmpf.dll`；
+>    毫秒级过滤掉主进程与 Utility 进程，精准锁定承载目标 H5 的活跃渲染 PID；
+> 3. **多标签并发手动锁定**：如果同时打开了多个公众号文章与网页窗口，导致存在多个渲染进程，可运行 `wx-h5 inspect --list` 打印所有活跃渲染页面标题与 PID，再通过 `wx-h5 hook --pid <目标PID>` 实施定向精准注入。
+</details>
+
+<details>
+<summary><strong>Q8 [大内存解混淆]: 解混淆大型项目（>5MB 单体包）时，Node.js 报错内存溢出 (OOM) 崩溃？</strong></summary>
+
+> **解答**：大型商用小程序或单页应用（SPA）往往将数百个模块打入单体 JS 文件。Babel AST 语法树在内存中展开后，节点对象体积将膨胀 **20 ~ 40 倍**，触顶 Node.js 默认的 1.4GB 堆上限。请使用以下经过工业级验证的扩容与切片方案：
+> 1. **V8 堆内存物理扩容**：在执行解混淆前，通过环境变量分配 8GB ~ 16GB 专用虚拟堆内存：
+>    ```bash
+>    # Windows PowerShell
+>    $env:NODE_OPTIONS="--max-old-space-size=8192"
+>    wx-h5 deobfuscate "./output/wx1363195c4fb75cfc/344"
+>    
+>    # CMD 批处理
+>    set NODE_OPTIONS=--max-old-space-size=8192
+>    wx-h5 deobfuscate "./output/wx1363195c4fb75cfc/344"
+>    ```
+> 2. **启用分块增量反混淆 (`--chunked`)**：工具内置了模块切片解包引擎。带上 `--chunked` 参数后，工具先利用正则切分顶层 Webpack 模块字典，对单个模块原子化执行 AST 常量折叠与死代码消除后再汇总，内存占用峰值从 4GB 直降至 400MB；
+> 3. **忽略巨型无害第三方库**：配合 `--exclude-libs` 参数自动跳过 `vue`, `react-dom`, `echarts`, `crypto-js` 等知名开源库，仅针对业务自定义逻辑（如 `app-service.js`）执行解混淆，大幅提升运算效率与成功率。
+</details>
+
+<details>
+<summary><strong>Q9 [CDN 防盗链与跨域绕过]: 脱机沙箱或本地重定向时，资源报 403 Forbidden 防盗链或 CORS 跨域拦截？</strong></summary>
+
+> **解答**：微信 CDN 与第三方业务服务器针对外发请求部署了严密的安全校验策略，工具已在网关层完成自动化伪装重写：
+> 1. **防盗链校验原理**：微信 CDN（如 `res.wx.qq.com`、`*.qpic.cn`、腾讯云 COS）会严格校验 HTTP 请求头中的 `Referer` 必须包含腾讯域名白名单，且要求 `User-Agent` 必须含有 `MicroMessenger`、`NetType` 与 `OpenID/Ticket` 凭据；
+> 2. **自动注入合法仿生标头**：`wx-h5 sandbox` 与 `wx-h5 proxy` 内置双向反向代理中间件，向远端发包时自动重写并伪装头部：
+>    - 自动追加 `Referer: https://servicewechat.com/<appid>/page-frame.html`
+>    - 自动对齐微信官方 Windows 客户端完整 UA（包含真实 WeChat 4.x 微版本号与网络类型）；
+> 3. **跨域与 CSP 安全策略粉碎**：在响应流回传给浏览器前，工具自动剥除上游服务器的 `Content-Security-Policy`、`X-Frame-Options` 限制，并无条件注入响应头：
+>    ```http
+>    Access-Control-Allow-Origin: *
+>    Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
+>    Access-Control-Allow-Headers: *
+>    ```
+>    彻底消除外部脱机浏览器控制台中的红色 CORS 告警。
+</details>
+
+<details>
+<summary><strong>Q10 [系统提权与权限隔离]: 执行 Hook 注入时提示“拒绝访问 (Access is denied / os error 5)”？</strong></summary>
+
+> **解答**：此问题由 Windows **完整性级别 (Integrity Level / UAC)** 隔离机制引发：
+> 1. **权限隔离根因**：如果微信客户端是以“以管理员身份运行”（高完整性级别 High Integrity）拉起的，运行在普通用户权限（中完整性级别 Medium Integrity）的终端和 Python 调试器将无法调用底层 Windows API（如 `OpenProcess` 获取 `PROCESS_ALL_ACCESS` 句柄），直接抛出 `Access is denied`；
+> 2. **标准提权操作**：
+>    - 启动终端（PowerShell 或 CMD）时，右键单击图标并选择 **“以管理员身份运行”**，然后再执行 `wx-h5 hook`；
+>    - 本项目的独立发布版可执行程序（`.exe`）已强制内嵌 Windows 原生 `requireAdministrator` 清单，双击运行将自动弹出系统 UAC 提权提示，彻底免除手动配置；
+> 3. **反向权限对齐原则**：若微信是以普通权限登录启动的，调试工具推荐同样使用普通权限运行，避免因调试进程生成的日志文件、本地缓存文件归属于 Administrator 用户，导致微信进程因权限不足无法读取。
+</details>
+
 ---
 
 <a id="sponsor"></a><a id="赞助与支持"></a><a id="赞助支持"></a>

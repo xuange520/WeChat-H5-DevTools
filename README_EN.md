@@ -11,7 +11,7 @@
 [![Frida 17+](https://img.shields.io/badge/Frida-17+-FF69B4?logo=frida&logoColor=white)](https://frida.re/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS-blue.svg)](https://github.com/)
 
-[中文文档](./README.md) · [Matrix](#matrix) · [Screenshots](#screenshots) · [Features](#features) · [Quickstart](#quickstart) · [Sponsor](#sponsor) · [Community](#community) · [License](#license)
+[中文文档](./README.md) · [Matrix](#matrix) · [Screenshots](#screenshots) · [Features](#features) · [Quickstart](#quickstart) · [FAQ](#faq) · [Sponsor](#sponsor) · [Community](#community) · [License](#license)
 
 </div>
 
@@ -111,6 +111,79 @@ pip install -e .
   wx-h5 scan "./output/site_deobfuscated" -e report.md
   ```
 
+
+<a id="faq"></a>
+## ❓ Troubleshooting & FAQ
+
+<details>
+<summary><strong>Q1 [Proxy Troubleshooting]: Why does the WeChat in-app browser fail to connect or display "Proxy Server Refused Connection"?</strong></summary>
+
+> **Solution**: This is typically caused by local port occupation, system proxy overwrite, or unverified root certificates:
+> 1. **Port Conflicts**: Default proxy port `8899` might be occupied by other proxies/tools (Clash, v2rayN, Fiddler, Charles). Run `netstat -ano | findstr 8899` and specify an idle port using `wx-h5 proxy --port 8999`;
+> 2. **Network Sandbox**: WeChat 4.x isolates networking into `WeChatUtility.exe` / `WeChatAppEx.exe`. Ensure Windows Proxy Settings point to `127.0.0.1:8899` and disable conflicting TUN mode VPNs;
+> 3. **HTTPS Certificate**: If `NET::ERR_CERT_AUTHORITY_INVALID` is encountered, install the generated mitmproxy root certificate (`~/.mitmproxy/mitmproxy-ca-cert.cer`) into the Windows **Trusted Root Certification Authorities** store.
+</details>
+
+<details>
+<summary><strong>Q2 [Cross-Version Kernel Decoupling]: How does the tool maintain compatibility across WeChat 3.9/4.0/4.1 and RadiumWMPF upgrades without manual offsets?</strong></summary>
+
+> **Solution**: Rather than hardcoded static memory offsets or legacy CLI switches (`--xweb-enable-inspect=1`), the suite uses a **Three-Tier Adaptive Decoupling & Signature Scanning** architecture:
+> 1. **Runtime Signature Scanning**: Dynamically scans Chromium VTable pointers, `DevToolsActivePort` branches, and Blink initialization routines;
+> 2. **Three-Tier Fallback**:
+>    - **L1 Process Interception**: Frida hooks host `CreateProcessW` to inject `--remote-debugging-port` at process birth;
+>    - **L2 Protocol Injection**: Hooks runtime `WeixinJSBridge` message dispatch to append `vConsole`;
+>    - **L3 Transparent Proxy**: Streaming AST injection at the network transport layer;
+> 3. **Address Pools**: Built-in `addresses.<kernel_version>.json` configuration pool (e.g. Radium 25560) enables zero-recompile hot updates.
+</details>
+
+<details>
+<summary><strong>Q3 [Strong Cache Busting]: Why do modified local scripts in Local Overrides fail to reflect upon refreshing?</strong></summary>
+
+> **Solution**: WeChat enables aggressive **Chromium Disk Cache** and HTTP 304 revalidation for web resources:
+> 1. **Automatic Header Stripping**: `wx-h5 sandbox` and `wx-h5 proxy` strip `ETag` / `If-Modified-Since` and inject `Cache-Control: no-cache, no-store, must-revalidate` and `Pragma: no-cache`;
+> 2. **Disk Cache Purge**: Clear via vConsole **Storage -> Clear Cookies & Cache** or clear `%APPDATA%\Tencent\WeChat\radium\web\cache`;
+> 3. **URL Timestamping**: Append query parameter `?_t=<timestamp>` to bypass URL index caching.
+</details>
+
+<details>
+<summary><strong>Q4 [Multi-Process Pipeline Identification]: How does the tool isolate the target renderer among dozens of WeChat processes?</strong></summary>
+
+> **Solution**: WeChat 4.x adopts the Chromium multi-process sandbox architecture:
+> 1. **Process Topology**:
+>    - `WeChat.exe`: Main UI & messaging broker;
+>    - `WeChatAppEx.exe` / `WeixinExt.exe`: RadiumWMPF Chromium rendering sandbox (Hook target);
+>    - `WeChatUtility.exe`: Background network & media codecs;
+> 2. **Pipeline Detector**: `wx-h5 hook` scans process command line arguments for `--type=renderer` and verifies loaded `radium.dll` modules to lock the exact PID;
+> 3. **Manual PID Binding**: Run `wx-h5 inspect --list` and bind with `wx-h5 hook --pid <PID>`.
+</details>
+
+<details>
+<summary><strong>Q5 [Large-Memory AST Deobfuscation]: Why does Node.js crash with "JavaScript heap out of memory" on large bundles (>5MB)?</strong></summary>
+
+> **Solution**: Large SPAs expand 20-40x in AST memory during node traversal:
+> 1. **V8 Heap Expansion**: Allocate 8GB+ memory before running:
+>    `$env:NODE_OPTIONS="--max-old-space-size=8192"` (PowerShell) or `set NODE_OPTIONS=--max-old-space-size=8192` (CMD);
+> 2. **Chunked Deobfuscation (`--chunked`)**: Splits top-level Webpack module dictionaries and deobfuscates modules individually, reducing peak memory from 4GB to ~400MB;
+> 3. **Library Exclusion**: Pass `--exclude-libs` to skip known OSS libraries (`vue`, `react`, `echarts`).
+</details>
+
+<details>
+<summary><strong>Q6 [CDN Anti-Hotlinking & CORS Bypass]: How to resolve 403 Forbidden or CORS errors when loading remote assets?</strong></summary>
+
+> **Solution**:
+> 1. **Anti-Hotlinking Header Spoofing**: Automatically injects valid WeChat headers:
+>    `Referer: https://servicewechat.com/` and genuine `MicroMessenger` User-Agent strings;
+> 2. **CORS & CSP Stripping**: Automatically strips upstream `Content-Security-Policy` and injects `Access-Control-Allow-Origin: *`.
+</details>
+
+<details>
+<summary><strong>Q7 [Privilege Elevation & UAC Isolation]: Why does Hook injection fail with "Access is denied (os error 5)"?</strong></summary>
+
+> **Solution**:
+> 1. **Integrity Level**: If WeChat is launched as Administrator (High Integrity), medium-integrity terminal processes cannot obtain `PROCESS_ALL_ACCESS` handles;
+> 2. **Elevation**: Right click PowerShell/CMD and select **Run as administrator**;
+> 3. **Native UAC**: Standalone executables are embedded with `requireAdministrator` manifests to auto-prompt for UAC elevation upon double-click.
+</details>
 
 ---
 
