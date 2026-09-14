@@ -49,3 +49,4 @@ releases/**/*.tar.gz
 records/media_assets/
 records/design_assets/
 records/logs/
+records/conversation_vault/
