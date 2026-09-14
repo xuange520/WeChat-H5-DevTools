@@ -45,8 +45,12 @@ releases/**/*.zip
 releases/**/*.whl
 releases/**/*.tar.gz
 
-# Local session media and design artifacts
-records/media_assets/
-records/design_assets/
-records/logs/
-records/conversation_vault/
+# Local version records, logs, media, and conversation vault
+records/
+
+# Internal agent documentation, planning artifacts, rules, and skills
+docs/artifacts/
+docs/implementation_plan.md
+docs/walkthrough.md
+docs/rules/
+docs/skills/

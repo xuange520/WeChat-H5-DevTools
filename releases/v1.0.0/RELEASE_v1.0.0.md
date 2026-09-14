@@ -1,28 +1,45 @@
-# WeChat-H5-DevTools v1.0.0 发布归档与溯源存证 (Release & Traceability Archive)
+# WeChat-H5-DevTools v1.0.0 发布说明 (Release Notes)
 
-- **发布版本**：`v1.0.0`
-- **归档日期**：`2026-09-14`
-- **核心内核支持**：微信 4.1.x (`4.1.13.12`), RadiumWMPF (`25510`, `25497`, `25364`, `20089`, `16389`, `11581`)
-- **发布产物清单与 SHA-256 校验哈希**：
-```text
-2b14a4698a91f01566c9c296a15605c2c6e81a5fcbe7700ea0c235085ab80b7f  WeChat-H5-DevTools-v1.0.0-standalone.zip
-e839be21b65e3e6cd949810b394fb07b4303c3ddc0e0c01a9988d11e8743f3c1  wechat_h5_devtools-1.0.0-py3-none-any.whl
-8613b8d413e4fa51b8ad5c39313e126c0945e75a98e079eb2a0e438c9d36619a  wechat_h5_devtools-1.0.0.tar.gz
-```
+- **版本号**：`v1.0.0`
+- **发布日期**：`2026-09-14`
+- **适用平台**：Windows 10 / Windows 11 (x64)
+- **微信内核支持**：微信 4.1.x (`4.1.13.12`) 及 4.0.x，RadiumWMPF (`25510` 及历史版本)
 
 ---
 
-## 🔍 后续排错与溯源定位指南 (Troubleshooting & Traceability Guide)
+## 核心更新概括
 
-当用户或买家在后续使用中报告报错时，请按以下指引进行快速排障与版本锁定：
+1. **微信版本与内核动态感知**：
+   - 动态识别并捕获当前运行中的微信主程序 (`Weixin.exe` / `WeChat.exe`)；
+   - 原生提取宿主机微信真实 PE 版本号 (`4.1.13.12`) 与机器架构 (`x64`)；
+   - 实时识别 RadiumWMPF 沙箱主控与渲染沙箱进程拓扑。
 
-1. **版本锁定与哈希对比**：
-   - 核对用户所用文件的 SHA-256 是否与上述发布基准一致，排查是否因本地修改或下载损坏导致；
-2. **RadiumWMPF 路径与内核匹配**：
-   - 用户微信内嵌环境路径：`%AppData%\Tencent\xwechat\XPlugin\Plugins\RadiumWMPF`
-   - 检查该路径下的文件夹数字（如是否超过 25510），若为更高版本需排查注头偏移；
-3. **关键进程拦截点检查**：
-   - 微信 4.1.x 架构下必须捕获 `WeixinExt.exe` 与 `Weixin.exe (--type=renderer)`；
-   - 若 Frida 挂载超时，使用 `wx-h5 doctor` 排查 Frida 与 Node 依赖环境；
-4. **透明代理端口冲突排查**：
-   - 默认端口 `8899`，若遇端口占用，引导用户切换：`wx-h5 proxy --port 9090`。
+2. **现代 Fluent WebGUI 桌面工作台**：
+   - 基于原生 WebView2 硬件加速打造，全面融入 Supabase 深色美学与主题规范；
+   - 原生多尺寸应用图标装配与标题栏适配；
+   - 本地物理日志实时存盘 (`records/logs/console_stream.log`)，支持一键复制与目录定位。
+
+3. **公众号 / 小程序 H5 调试按钮注入**：
+   - 绕过 RadiumWMPF 安全沙箱限制，在任意公众号文章或网页中注入绿色 vConsole 调试按钮；
+   - 全权限解锁 `WeixinJSBridge`、控制台日志、网络抓包与 Storage 审查。
+
+4. **脱机高保真沙箱与透明代理**：
+   - 本地 HTTP/HTTPS 透明代理监听 (`127.0.0.1:8899`)；
+   - 外部脱机浏览器 (Edge / Chrome) 模拟真实微信环境，注入 JSSDK Polyfill 与 UA 矩阵。
+
+5. **AST 语法树解混淆与安全审计**：
+   - 自动化批量深度解混淆，还原控制流平坦化与字符串解密池；
+   - 递归提取 Webpack 异步分包与 SourceMap 还原；
+   - 全域 API 路由、敏感凭据与国密算法静态安全审计。
+
+---
+
+## 快速启动
+
+```bash
+# 启动桌面控制台
+wx-h5 gui
+
+# 或直接运行
+python examples/supabase_gui/app.py
+```
