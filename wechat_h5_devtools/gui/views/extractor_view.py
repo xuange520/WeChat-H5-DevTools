@@ -67,7 +67,7 @@ class ExtractorView(ScrollArea):
 
         # 选项
         opt_box = QHBoxLayout()
-        self.chk_deobfuscate = CheckBox("提取后自动调用 Webcrack 进行 AST 反混淆与模块解包", self)
+        self.chk_deobfuscate = CheckBox("提取后自动进行 AST 语法树反混淆与模块解包", self)
         self.chk_deobfuscate.setChecked(True)
         self.chk_sourcemap = CheckBox("自动探测并还原 SourceMap (.vue / .ts)", self)
         self.chk_sourcemap.setChecked(True)

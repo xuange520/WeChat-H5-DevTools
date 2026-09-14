@@ -108,7 +108,7 @@ from .extractor.deobfuscator import Deobfuscator
 @click.argument("url")
 @click.option("--output", "-o", default="output_project", help="本地源码保存目录 (相对路径自动存入本项目 output/ 目录)")
 @click.option("--ua", "-u", default="ios", help="请求 User-Agent 平台")
-@click.option("--deobfuscate", "-d", is_flag=True, default=False, help="抓取完成后自动执行 Webcrack 全量 AST 解混淆与解包")
+@click.option("--deobfuscate", "-d", is_flag=True, default=False, help="抓取完成后自动执行全量 AST 语法树解混淆与解包")
 def dump_cmd(url, output, ua, deobfuscate):
     print_banner()
     final_output = _resolve_path(output, "output_project")
@@ -118,7 +118,7 @@ def dump_cmd(url, output, ua, deobfuscate):
         deobf = Deobfuscator(input_dir=str(final_output))
         deobf.deobfuscate()
 
-@cli.command(name="deobfuscate", help="【Webcrack】对已下载的前端工程执行批量 AST 解混淆与 Webpack 模块解包")
+@cli.command(name="deobfuscate", help="对已下载的前端工程执行批量 AST 语法树解混淆与 Webpack 模块解包")
 @click.argument("target_dir")
 @click.option("--output", "-o", default=None, help="解混淆源码输出目录 (默认: <target_dir>_deobfuscated)")
 @click.option("--all", "-a", "all_dirs", is_flag=True, default=False, help="批量解混淆该总目录下的所有子工程/子版本目录")

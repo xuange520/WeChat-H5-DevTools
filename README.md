@@ -4,7 +4,7 @@
 
 # WeChat-H5-DevTools
 
-**微信 4.x 内置浏览器 / 公众号 H5 / 小程序 满血调试与逆向工程套件**
+**WMPFDebugger 内置浏览器与公众号 H5 满血调试与逆向工具箱**
 
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Node 18+](https://img.shields.io/badge/Node.js-18+-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
@@ -12,7 +12,7 @@
 [![Frida 17+](https://img.shields.io/badge/Frida-17+-FF69B4?logo=frida&logoColor=white)](https://frida.re/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS-blue.svg)](https://github.com/)
 
-[核心功能](#features) · [实测效果](#screenshots) · [快速上手](#quickstart) · [命令行指南](#cli) · [实战工作流](#workflows) · [兼容矩阵](#matrix) · [常见问题](#faq) · [赞助支持](#sponsor) · [交流群](#community) · [免责声明](#disclaimer)
+[核心功能](#features) · [实测效果](#screenshots) · [快速上手](#quickstart) · [图形界面](#gui) · [命令行指南](#cli) · [实战工作流](#workflows) · [兼容矩阵](#matrix) · [常见问题](#faq) · [开源鸣谢](#attribution) · [赞助支持](#sponsor) · [交流群](#community) · [免责声明](#disclaimer)
 
 </div>
 
@@ -23,7 +23,7 @@
 
 在微信 4.x（Windows / macOS）架构升级后，官方彻底屏蔽了内置浏览器窗口对物理 `F12` 热键的响应，同时外部脱机浏览器调试常常受阻于 **“请在微信客户端打开链接”**、`WeixinJSBridge` 缺失、异步 Webpack Chunk 分包难以提取等难题。
 
-**`WeChat-H5-DevTools`** 是一套开箱即用的工业级全能解决方案，集 **微信内免按键浮动调试器注入**、**脱机高保真 JSSDK 模拟沙箱**、**本地代码实时热重载 (Local Overrides)**、**Webcrack 批量 AST 解混淆与 Webpack 模块解包** 以及 **全域 API 路由与国密算法静态审计** 于一体，全面赋能微信 Web 生态开发与安全审计！
+**`WeChat-H5-DevTools`** 是一套开箱即用的工业级全能解决方案，集 **微信内免按键浮动调试器注入**、**脱机高保真 JSSDK 模拟沙箱**、**本地代码实时热重载 (Local Overrides)**、**自动化全量 AST 语法树深度解混淆与 Webpack 模块解包** 以及 **全域 API 路由与国密算法静态审计** 于一体，全面赋能微信 Web 生态开发与安全审计！
 
 ---
 
@@ -94,6 +94,13 @@ pip install -e .
     ```
   * 几秒钟后，就会在当前目录下生成一份排版精美、包含了所有接口与加密特征的完整报告文件！
 
+* **需求 E：我不喜欢黑框命令行，我想直接使用高颜值可视化桌面客户端？**
+  * 在命令行输入：
+    ```bash
+    python examples/supabase_gui/app.py
+    ```
+  * 电脑将自动弹出 Fluent 风格桌面客户端，支持一键启动代理、AST 解混淆、实时中继日志与一键复制全部日志！
+
 ---
 
 <a id="screenshots"></a><a id="实测效果"></a><a id="实战效果"></a>
@@ -120,9 +127,42 @@ pip install -e .
 * **本地代码实时热重载 (Local Overrides)**：开发调试神器，支持本地单文件秒级替换线上 JS/CSS，自动禁用缓存与跨域放行，修改即时生效；
 * **脱机高保真沙箱与 JSSDK 模拟**：内置全平台微信 User-Agent 矩阵与 30+ 常见 `WeixinJSBridge` 原生 API Mock（支持支付、扫码、定位、分享拦截），外部 Chrome/Edge 满血开 F12 不报错；
 * **全站 Webpack 分包递归逆向提取**：输入任意公众号 H5 链接，自动递归提取主包、异步 Chunk JS、CSS 及静态资产，按原始路径组织落盘；
-* **Webcrack 批量 AST 解混淆与解包**：内置专业级 Webcrack AST 还原引擎，支持 Webpack 打包模块解压，集成微信小程序组件 AST 容错外科手术，自动切除私有组件元数据与悬空闭包，零告警高保真还原；
+* **自动化 AST 深度解混淆与模块解包**：内置工业级 AST 语法树还原引擎，支持 Webpack 打包模块解压，集成微信小程序组件 AST 容错外科手术，自动切除私有组件元数据与悬空闭包，零告警高保真还原；
 * **SourceMap 一键还原 `.vue` / `.ts` 原始工程**：自动探测并解包 SourceMap，将编译混淆的代码 1:1 还原为原始的 Vue 单文件组件与 TypeScript 源码；
 * **全域 API 路由与密码学安全审计**：离线静态审计已提取的 JS 代码，深度提取后端业务域名 (Base URLs)、微信原生网络库 (`wx.request`, `@haici/request-core`)、国密算法 (`miniprogram-sm-crypto`, `@haici/gmsm4`, `TripleDES`)、非对称加密 (RSA/`jsbn`)、防篡改签名机制与全量业务 API 路由清单。
+
+---
+
+<a id="gui"></a><a id="图形界面"></a><a id="gui启动指南"></a>
+## 🖥️ 图形交互界面 (GUI) 启动指南
+
+除了命令行 CLI 工具外，本项目提供了两种交互友好的桌面可视化客户端，满足不同操作偏好：
+
+### 1. 现代 Fluent WebGUI (强烈推荐 / 基于 WebView2 硬件加速)
+采用微软 Fluent Design / Supabase 现代暗黑极简卡片视觉规范，内置多标签页路由：
+- **实时运行日志**：集成终端日志双向中继流，提供 **`[复制全部日志]`**、**`[打开本地日志]`**、**`[定位日志目录]`** 一键物理操作；
+- **全日志物理落盘**：日志实时安全同步存盘至本地 `records/logs/console_stream.log`；
+- **可视化调试与反混淆**：一键拉起透明代理注入、AST 深度解混淆与模块解包；
+- **内置合规与开源鸣谢**：直接内置开源依赖仓库链接、防倒卖免责声明与 FAQ 排障。
+
+**启动命令**：
+```bash
+python examples/supabase_gui/app.py
+```
+> *环境要求：Windows 10/11（Windows 11 自带 WebView2；Win10 用户需确保已安装 Microsoft Edge WebView2 运行时）。*
+
+### 2. PyQt6 Fluent 传统桌面版
+针对传统桌面应用开发者的原生 Qt6 界面，支持深色/浅色主题自适应与标准 Fluent 组件。
+
+**启动命令**：
+```bash
+# 方式 A：通过 CLI 快捷子命令启动
+wx-h5 gui
+
+# 方式 B：直接运行模块入口
+python -m wechat_h5_devtools.gui.main_window
+```
+> *依赖安装：需先执行 `pip install PyQt6 PyQt-Fluent-Widgets pywebview` 安装界面拓展组件。*
 
 ---
 
@@ -141,7 +181,7 @@ pip install -e .
 | `override` | 【开发神器】本地代码实时替换与热重载 | `<override_dir>`, `--port, -p` | `wx-h5 override ./local_js --port 8899` |
 | `open` | 外部独立沙箱拉起满血 F12 (免微信) | `<url>`, `--browser, -b`, `--ua, -u` | `wx-h5 open "https://..." --ua ios` |
 | `dump` | 全站 Webpack 异步分包递归抓取 | `<url>`, `-o` (输出目录), `-d` (抓取后自动解混淆) | `wx-h5 dump "https://..." -o ./site -d` |
-| `deobfuscate` | 【Webcrack】批量 AST 解混淆与模块解包 | `<target_dir>`, `-o` (输出目录), `-a / --all` (批量子工程) | `wx-h5 deobfuscate ./site -a` |
+| `deobfuscate` | 批量 AST 语法树解混淆与模块解包 | `<target_dir>`, `-o` (输出目录), `-a / --all` (批量子工程) | `wx-h5 deobfuscate ./site -a` |
 | `restore` | 从 SourceMap 逆向还原 Vue/TS 源码 | `<target_dir>`, `-o` (输出目录) | `wx-h5 restore ./site` |
 | `scan` | 静态审计提取域名、API、国密与凭据 | `<target_dir>`, `-e` (导出MD报告), `-a / --all` | `wx-h5 scan ./site -e report.md` |
 
@@ -221,120 +261,33 @@ wx-h5 scan "./output/wx1363195c4fb75cfc/344_deobfuscated" --export audit_report.
 ---
 
 <a id="faq"></a><a id="常见问题"></a>
-## ❓ 常见问题排障 (FAQ)
+## ❓ 常见问题精选与排障索引 (FAQ)
+
+为了保持主页文档精炼，涵盖内核脱钩机制、多进程沙箱识别、强缓存粉碎、Node 堆扩容与提权等全量 11 大核心疑难方案，已统一收拢归档至独立技术全书：
+
+👉 **[点击查阅完整技术全书：常见问题排障全书 (FAQ.md)](./docs/FAQ.md)**
+
+### 高频速查 TOP 3：
 
 <details>
 <summary><strong>Q1: 运行 <code>wx-h5</code> 提示“无法识别为 cmdlet 或命令”？</strong></summary>
 
-> **解答**：请在项目根目录运行 `pip install -e .`，或者直接使用 `python main.py <命令>` 进行调用。
+> **解答**：请在项目根目录运行 `pip install -r requirements.txt` 和 `pip install -e .`，或直接使用 `python main.py <命令>` 执行。详见 [FAQ.md: Q1](./docs/FAQ.md#q1-运行-wx-h5-提示无法识别为-cmdlet-或命令)。
 </details>
 
 <details>
 <summary><strong>Q2: 执行 <code>wx-h5 hook</code> 提示“已有微信进程在运行”？</strong></summary>
 
-> **解答**：微信在开启状态下无法由调试器冷启动。工具内置了自愈清理逻辑，会自动提示并终止旧进程重新拉起；你也可以手动完全退出微信托盘图标后再执行此命令。
+> **解答**：微信在开启状态下无法注入调试参数。请彻底退出系统托盘微信，或在终端运行 `taskkill /F /IM WeChat.exe /IM Weixin.exe /IM WeChatAppEx.exe /T` 后重试。详见 [FAQ.md: Q2](./docs/FAQ.md#q2-执行-wx-h5-hook-提示已有微信进程在运行)。
 </details>
 
 <details>
-<summary><strong>Q3: 外部浏览器打开页面仍提示“环境异常”或特定 JSSDK 接口未响应？</strong></summary>
+<summary><strong>Q3: 外部脱机浏览器打开仍提示“请在微信客户端打开”？</strong></summary>
 
-> **解答**：工具沙箱已内置 `getBrandWCPayRequest`（微信支付）、`getLocation`（定位）、`scanQRCode`（扫码）等 30+ 常见接口。若遇到极其私有的微信定制 API，可直接在 `wechat_h5_devtools/sandbox/polyfills/weixin_bridge.js` 中按需扩展对应 Mock 响应。
+> **解答**：使用 `wx-h5 open "<URL>" --browser edge --ua ios` 启动，工具会在 `document_start` 毫秒级自动注入包含 30+ 接口的 `WeixinJSBridge` 模拟沙箱。详见 [FAQ.md: Q3](./docs/FAQ.md#q3-外部脱机浏览器打开仍提示请在微信客户端打开或特定-jssdk-接口未响应)。
 </details>
 
-<details>
-<summary><strong>Q4 [代理失效排障]: 启动透明代理后，微信内置浏览器无法联网或提示“代理服务器拒绝连接”？</strong></summary>
-
-> **解答**：此现象 100% 由本地端口抢占、Windows 系统代理覆写或根证书信任链路受阻所致，请按以下三步快速排查：
-> 1. **排查端口冲突**：默认代理端口 `8899` 可能已被其他工具（如 Clash、v2rayN、Fiddler、Charles）抢占。在终端执行 `netstat -ano | findstr 8899`，若发现已被其他 PID 监听，使用 `wx-h5 proxy --port 8999` 指定闲置端口运行；
-> 2. **微信独立网络沙箱检查**：微信 4.x 将网络通信独立收拢至 `WeChatUtility.exe` / `WeChatAppEx.exe`，某些全局代理客户端会覆写系统 PAC 脚本导致流量旁路绕过。进入 Windows **“设置 -> 网络和 Internet -> 代理”**，确认手动代理服务器地址正确指向 `127.0.0.1:8899`，并关闭第三方 VPN 的虚拟网卡 TUN 模式；
-> 3. **HTTPS 根证书受信任校验**：若微信内置浏览器报 `NET::ERR_CERT_AUTHORITY_INVALID`，说明微信沙箱拦截了自签名 HTTPS 握手。请将项目生成或 mitmproxy 的根证书（`~/.mitmproxy/mitmproxy-ca-cert.cer`）双击安装至 Windows 的 **“受信任的根证书颁发机构”** 物理存储区。
-</details>
-
-<details>
-<summary><strong>Q5 [内核跨版本脱钩原理]: 微信大版本升级（如 4.0/4.1 及 RadiumWMPF 内核变动）后，工具如何做到免适配稳定脱钩？</strong></summary>
-
-> **解答**：传统方案依赖硬编码静态内存偏移或特定启动参数（如旧版已失效的 `--xweb-enable-inspect=1`），微信小版本升级即全面失效。本项目采用 **“三层自适应脱钩与运行时签名扫描”** 架构：
-> 1. **物理层放弃静态偏移**：`wechat_h5_devtools/core/injector.py` 运行时对 `RadiumWMPF` / `WeChatAppEx.exe` 的 Chromium 虚表（VTable）、`DevToolsActivePort` 判断分支及 Blink 初始化逻辑进行动态特征码（Signature Mask）扫描，不依赖固定内存硬地址；
-> 2. **三级容灾多路挂载**：
->    - **L1 动态进程拦截**：Frida 挂载宿主 `CreateProcessW` API，在底层派发渲染沙箱子进程瞬间无缝向命令行注入 `--remote-debugging-port` 与 `--headless=new` 调试开关；
->    - **L2 协议管道热注入**：针对已在运行的微信进程，Hook `WeixinJSBridge` 消息派发泵，在网页 DOM 加载初期毫秒级调用 `document.createElement('script')` 追加官方 `vConsole` 节点；
->    - **L3 透明网络层兜底**：无视任何客户端二进制结构，在代理响应中对 HTML/JS 文件执行流式 AST 注入，三层中任意一层生效即可确保 100% 调试就绪；
-> 3. **内核特征表增量进化**：项目内置 `addresses.<kernel_version>.json` 地址映射池（如已内置 25560 内核特征），新内核发布时仅需追加特征定义，无需重编译二进制。
-</details>
-
-<details>
-<summary><strong>Q6 [微信强缓存击穿]: 使用 Local Overrides 重定向后，刷新页面仍加载线上旧代码？</strong></summary>
-
-> **解答**：微信内置浏览器出于性能考量，对公众号与小程序 H5 启用了极度激进的 **Chromium 磁盘强缓存 (Disk Cache)** 与 HTTP 304 协商缓存，普通 F5 或点击刷新无法穿透缓存。请按以下方案实施彻底击穿：
-> 1. **方案 A（工具代理物理剥离缓存头）**：`wx-h5 sandbox` 与 `wx-h5 proxy` 内置了强缓存粉碎中间件，自动拦截上游响应并强制重写头信息：
->    - 注入 `Cache-Control: no-cache, no-store, must-revalidate, max-age=0`
->    - 注入 `Pragma: no-cache` 与 `Expires: 0`
->    - 物理剥除 `ETag` 与 `If-Modified-Since` 标头，强制微信内核发起全量 200 请求；
-> 2. **方案 B（清除本地磁盘缓存文件）**：微信将渲染缓存保存在 `%APPDATA%\Tencent\WeChat\radium\web\cache` 或 `xwechat_files` 下。在注入成功的 vConsole 中点击 **“Storage” -> “Clear Cookies & Cache”**，或关闭微信后直接删除该目录；
-> 3. **方案 C（URL 动态时间戳破坏）**：在访问的目标 URL 末尾追加防缓存随机参数（如 `?_t=1726315890` 或 `&dev_bust=true`），迫使内核绕过 URL 缓存索引直接抓取重定向后的本地源码。
-</details>
-
-<details>
-<summary><strong>Q7 [多进程管线识别]: 任务管理器中存在数十个 WeChat 进程，工具如何精准锁定目标渲染进程？</strong></summary>
-
-> **解答**：微信 4.x 深度对齐了现代 Chromium 多进程沙箱模型，各进程分工高度隔离：
-> 1. **微信多进程角色全景**：
->    - `WeChat.exe`：主界面 UI 与长连接通讯中枢（Broker 进程，不负责渲染 Web）；
->    - `WeChatAppEx.exe` / `WeixinExt.exe`：RadiumWMPF 网页与小程序渲染沙箱（**工具的核心 Hook 目标**）；
->    - `WeChatUtility.exe`：负责网络下载、崩溃转储与音视频编解码辅助管线；
->    - `WeChatPlayer.exe`：多媒体播放器沙箱；
-> 2. **自适应管线识别器**：`wx-h5 hook` 启动后自动枚举当前用户会话的所有子进程，通过 Windows PEB (Process Environment Block) 探测命令行参数：
->    - 命中 `--type=renderer` 与 `--enable-blink-features` 标识符；
->    - 校验进程模块列表中是否已加载 `radium.dll` / `wmpf.dll`；
->    毫秒级过滤掉主进程与 Utility 进程，精准锁定承载目标 H5 的活跃渲染 PID；
-> 3. **多标签并发手动锁定**：如果同时打开了多个公众号文章与网页窗口，导致存在多个渲染进程，可运行 `wx-h5 inspect --list` 打印所有活跃渲染页面标题与 PID，再通过 `wx-h5 hook --pid <目标PID>` 实施定向精准注入。
-</details>
-
-<details>
-<summary><strong>Q8 [大内存解混淆]: 解混淆大型项目（>5MB 单体包）时，Node.js 报错内存溢出 (OOM) 崩溃？</strong></summary>
-
-> **解答**：大型商用小程序或单页应用（SPA）往往将数百个模块打入单体 JS 文件。Babel AST 语法树在内存中展开后，节点对象体积将膨胀 **20 ~ 40 倍**，触顶 Node.js 默认的 1.4GB 堆上限。请使用以下经过工业级验证的扩容与切片方案：
-> 1. **V8 堆内存物理扩容**：在执行解混淆前，通过环境变量分配 8GB ~ 16GB 专用虚拟堆内存：
->    ```bash
->    # Windows PowerShell
->    $env:NODE_OPTIONS="--max-old-space-size=8192"
->    wx-h5 deobfuscate "./output/wx1363195c4fb75cfc/344"
->    
->    # CMD 批处理
->    set NODE_OPTIONS=--max-old-space-size=8192
->    wx-h5 deobfuscate "./output/wx1363195c4fb75cfc/344"
->    ```
-> 2. **启用分块增量反混淆 (`--chunked`)**：工具内置了模块切片解包引擎。带上 `--chunked` 参数后，工具先利用正则切分顶层 Webpack 模块字典，对单个模块原子化执行 AST 常量折叠与死代码消除后再汇总，内存占用峰值从 4GB 直降至 400MB；
-> 3. **忽略巨型无害第三方库**：配合 `--exclude-libs` 参数自动跳过 `vue`, `react-dom`, `echarts`, `crypto-js` 等知名开源库，仅针对业务自定义逻辑（如 `app-service.js`）执行解混淆，大幅提升运算效率与成功率。
-</details>
-
-<details>
-<summary><strong>Q9 [CDN 防盗链与跨域绕过]: 脱机沙箱或本地重定向时，资源报 403 Forbidden 防盗链或 CORS 跨域拦截？</strong></summary>
-
-> **解答**：微信 CDN 与第三方业务服务器针对外发请求部署了严密的安全校验策略，工具已在网关层完成自动化伪装重写：
-> 1. **防盗链校验原理**：微信 CDN（如 `res.wx.qq.com`、`*.qpic.cn`、腾讯云 COS）会严格校验 HTTP 请求头中的 `Referer` 必须包含腾讯域名白名单，且要求 `User-Agent` 必须含有 `MicroMessenger`、`NetType` 与 `OpenID/Ticket` 凭据；
-> 2. **自动注入合法仿生标头**：`wx-h5 sandbox` 与 `wx-h5 proxy` 内置双向反向代理中间件，向远端发包时自动重写并伪装头部：
->    - 自动追加 `Referer: https://servicewechat.com/<appid>/page-frame.html`
->    - 自动对齐微信官方 Windows 客户端完整 UA（包含真实 WeChat 4.x 微版本号与网络类型）；
-> 3. **跨域与 CSP 安全策略粉碎**：在响应流回传给浏览器前，工具自动剥除上游服务器的 `Content-Security-Policy`、`X-Frame-Options` 限制，并无条件注入响应头：
->    ```http
->    Access-Control-Allow-Origin: *
->    Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
->    Access-Control-Allow-Headers: *
->    ```
->    彻底消除外部脱机浏览器控制台中的红色 CORS 告警。
-</details>
-
-<details>
-<summary><strong>Q10 [系统提权与权限隔离]: 执行 Hook 注入时提示“拒绝访问 (Access is denied / os error 5)”？</strong></summary>
-
-> **解答**：此问题由 Windows **完整性级别 (Integrity Level / UAC)** 隔离机制引发：
-> 1. **权限隔离根因**：如果微信客户端是以“以管理员身份运行”（高完整性级别 High Integrity）拉起的，运行在普通用户权限（中完整性级别 Medium Integrity）的终端和 Python 调试器将无法调用底层 Windows API（如 `OpenProcess` 获取 `PROCESS_ALL_ACCESS` 句柄），直接抛出 `Access is denied`；
-> 2. **标准提权操作**：
->    - 启动终端（PowerShell 或 CMD）时，右键单击图标并选择 **“以管理员身份运行”**，然后再执行 `wx-h5 hook`；
->    - 本项目的独立发布版可执行程序（`.exe`）已强制内嵌 Windows 原生 `requireAdministrator` 清单，双击运行将自动弹出系统 UAC 提权提示，彻底免除手动配置；
-> 3. **反向权限对齐原则**：若微信是以普通权限登录启动的，调试工具推荐同样使用普通权限运行，避免因调试进程生成的日志文件、本地缓存文件归属于 Administrator 用户，导致微信进程因权限不足无法读取。
-</details>
+> 📘 **更多疑难排障（代理端口抢占、Node 8GB 堆内存溢出、CDN 403 跨域、UAC 权限提权、GUI 启动异常等）**：请直接移步至 [docs/FAQ.md](./docs/FAQ.md) 查阅完整解答。
 
 ---
 
@@ -391,12 +344,45 @@ wx-h5 scan "./output/wx1363195c4fb75cfc/344_deobfuscated" --export audit_report.
 
 ---
 
+<a id="attribution"></a><a id="开源鸣谢"></a><a id="开源引用与技术借鉴"></a>
+## 🙏 开源引用、技术借鉴与鸣谢 (Attribution & Acknowledgements)
+
+本项目遵循开源社区技术诚信准则（Academic & Technical Integrity）。在研发攻坚过程中，深度借鉴、引用并受启发于以下优秀的开源项目与社区先驱成果，特此致以最崇高的敬意：
+
+### 1. 核心底层依赖与直接调用组件
+
+| 开源项目 | 官方仓库地址 (GitHub) | 开源许可证 | 本项目核心作用与应用场景 |
+| :--- | :--- | :--- | :--- |
+| **Frida** | [frida/frida](https://github.com/frida/frida) | wxWindows | 全平台动态代码插桩框架，用于注入 Windows 微信主进程 `CreateProcessW` 与 Chromium 渲染沙箱 |
+| **vConsole** | [Tencent/vConsole](https://github.com/Tencent/vConsole) | MIT | 腾讯官方前端移动端调试面板，用于在微信内置浏览器页面中免快捷键注入浮动调试球 |
+| **Eruda** | [liriliri/eruda](https://github.com/liriliri/eruda) | MIT | 移动端多功能控制台，提供 Elements 节点树审查、Network 抓包拦截与 Storage 本地存储查看 |
+| **AST 解混淆与解包引擎** | [j4k0xb/webcrack](https://github.com/j4k0xb/webcrack) | MIT | JavaScript 深度 AST 反混淆、常量折叠与 Webpack 单体包拆解还原底层引擎 |
+| **Mitmproxy** | [mitmproxy/mitmproxy](https://github.com/mitmproxy/mitmproxy) | MIT | 支持 TLS 拦截与 HTTP/HTTPS 流量实时重写的交互式网络代理中间件 |
+| **Babel** | [babel/babel](https://github.com/babel/babel) | MIT | JavaScript 抽象语法树（AST）解析、遍历与代码重构核心基石 |
+| **PyWebView** | [r0x0r/pywebview](https://github.com/r0x0r/pywebview) | BSD-3-Clause | 跨平台轻量级桌面 GUI 容器，原生调用 Windows 10/11 WebView2 硬件加速引擎 |
+| **Click** | [pallets/click](https://github.com/pallets/click) | BSD-3-Clause | 优雅、强大的 Python 交互式命令行 CLI 工具链框架 |
+| **Rich** | [Textualize/rich](https://github.com/Textualize/rich) | MIT | 终端高质感彩色文本排版、表格与加载进度条渲染组件 |
+| **PyQt-Fluent-Widgets** | [zhiyiYo/PyQt-Fluent-Widgets](https://github.com/zhiyiYo/PyQt-Fluent-Widgets) | GPLv3 | Windows 11 Fluent Design 风格桌面控件库灵感与参考 |
+
+### 2. 微信逆向生态研究与架构借鉴项目
+
+| 参考项目 | 作者 / 组织 | 官方仓库地址 (GitHub) | 核心借鉴价值与灵感启发 |
+| :--- | :--- | :--- | :--- |
+| **WeChatOpenDevTools-Python** | JaveleyQAQ | [JaveleyQAQ/WeChatOpenDevTools-Python](https://github.com/JaveleyQAQ/WeChatOpenDevTools-Python) | 微信内置浏览器与小程序开启 DevTools 开发者工具的核心思路与历史特征码参考 |
+| **First** | notstarr | [notstarr/First](https://github.com/notstarr/First) | 微信小程序全功能调试工具箱，启发了 Frida 动态挂钩 + CDP 协议与 MCP 工具链的设计 |
+| **e0e1-wx** | eeeeeeeeee-code | [eeeeeeeeee-code/e0e1-wx](https://github.com/eeeeeeeeee-code/e0e1-wx) | 微信小程序反编译、资源提取与工程结构还原工作流参考 |
+| **WeChat-Hook** | aixed | [aixed/WeChat-Hook](https://github.com/aixed/WeChat-Hook) | Windows 微信底层 Hook 机制与协议通信分析参考 |
+| **wechat-windows-versions** | tom-snow | [tom-snow/wechat-windows-versions](https://github.com/tom-snow/wechat-windows-versions) | 微信 Windows 历史全版本客户端版本归档与 RadiumWMPF 内核演进路线参考 |
+
+---
+
 <a id="disclaimer"></a><a id="免责声明"></a>
 ## ⚠️ 免责声明 (Disclaimer)
 
 1. **合法合规与技术研究**：本项目（`WeChat-H5-DevTools`）仅用于网络安全研究、前端跨平台兼容性测试、Web 开发调试与技术学习交流，严禁将其用于任何侵犯他人合法权益、危害网络安全或违反相关法律法规的活动。
 2. **风险自负原则**：使用者在基于本项目进行调试、抓包或接口调用时，须自行确保行为的合法合规性。任何因不当使用、恶意滥用或二次开发所引发的法律纠纷、系统故障、财产损失或账号风险，本项目作者及贡献者概不承担任何直接或连带法律责任。
 3. **知识产权尊重**：本项目中涉及的第三方商标、技术协议及相关标识，其知识产权均归其合法所有者所有。若相关方认为本项目存在侵权疑虑，请通过 Issue 与作者联系，我们将依法核实并积极配合处理。
+4. **防倒卖与非商业性声明 (Anti-Resale & Non-Commercial)**：本项目源码及所有编译发布版本**完全免费开源**，仅供技术交流与学习！**严禁任何二手贩子、黑产团伙或商业实体将本项目打包、改名、二次售卖或在闲鱼、淘宝、拼多多、发卡网等平台有偿贩售！** 任何购买者请立即向交易平台举报并申请全额退款。作者保留对所有恶意倒卖牟利行为进行侵权举证、全网维权与追究法律责任的全部权利。
 
 ---
 

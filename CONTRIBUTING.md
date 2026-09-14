@@ -13,7 +13,7 @@
 ```bash
 wx-h5 doctor
 ```
-- 检查项包括：微信主程序是否存在、Chrome/Edge 安装路径、Frida 动态 Hook 运行库版本、Node.js 运行时及 Webcrack 依赖。
+- 检查项包括：微信主程序是否存在、Chrome/Edge 安装路径、Frida 动态 Hook 运行库版本、Node.js 运行时及 AST 反混淆组件依赖。
 
 ### 第二步：核验 RadiumWMPF 内核版本
 1. 按 `Win + R` 输入：

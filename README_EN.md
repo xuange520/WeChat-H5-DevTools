@@ -4,14 +4,14 @@
 
 # WeChat-H5-DevTools
 
-**The Ultimate Debugging & Reverse-Engineering Toolkit for WeChat 4.x In-App Browser & Official Account H5 Webpages**
+**The ultimate debugging & reverse-engineering toolkit for WMPFDebugger In-App Browser & H5 Webpages with Frida hook, vConsole proxy, and API analyzer.**
 
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Frida 17+](https://img.shields.io/badge/Frida-17+-FF69B4?logo=frida&logoColor=white)](https://frida.re/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS-blue.svg)](https://github.com/)
 
-[中文文档](./README.md) · [Matrix](#matrix) · [Screenshots](#screenshots) · [Features](#features) · [Quickstart](#quickstart) · [FAQ](#faq) · [Sponsor](#sponsor) · [Community](#community) · [License](#license)
+[中文文档](./README.md) · [Matrix](#matrix) · [Screenshots](#screenshots) · [Features](#features) · [Quickstart](#quickstart) · [GUI](#gui) · [FAQ](#faq) · [Attribution](#attribution) · [Sponsor](#sponsor) · [Community](#community) · [License](#license)
 
 </div>
 
@@ -22,7 +22,7 @@
 
 Following the WeChat 4.x desktop architecture updates, the native `F12` hotkey on the embedded browser window was completely removed. Additionally, testing WeChat H5 pages in standard external desktop browsers typically suffers from `"Please open this link in WeChat"`, missing `WeixinJSBridge` runtimes, and complex asynchronous Webpack chunk extraction.
 
-**`WeChat-H5-DevTools`** delivers an all-in-one, production-grade toolkit combining **In-App vConsole Injection**, **Stealth WeChat Sandbox & JSSDK Polyfill**, **Local Overrides Hot-Reloading**, **Webcrack AST Deobfuscation & Webpack Extraction**, and **Deep Static Code & Cryptography Auditing**.
+**`WeChat-H5-DevTools`** delivers an all-in-one, production-grade toolkit combining **In-App vConsole Injection**, **Stealth WeChat Sandbox & JSSDK Polyfill**, **Local Overrides Hot-Reloading**, **Automated AST Deobfuscation & Webpack Extraction**, and **Deep Static Code & Cryptography Auditing**.
 
 ---
 
@@ -67,7 +67,7 @@ Tested and verified on the latest WeChat desktop client (`4.1.13.12`) with `Radi
 * **Local Overrides Hot-Reloading**: Instantly replace remote online JS/CSS scripts with local files in real time without rebuilding or redeploying;
 * **Stealth Browser Sandbox & JSSDK Mock**: Multi-platform WeChat UA presets paired with 30+ `WeixinJSBridge` native mocks (Payment, Scan, Location, Menu events) with native Chrome/Edge DevTools;
 * **Full-Site Webpack Chunk Dumper**: Recursively unpacks all HTML, Webpack async JS bundles, CSS, and static assets preserving original path structures;
-* **Webcrack AST Deobfuscator**: Integrated AST sanitization engine that repairs dangling closures and WeChat plugin wrappers, unpacking single-bundle files without warnings;
+* **Automated AST Deobfuscator & Unpacker**: Integrated AST sanitization engine that repairs dangling closures and WeChat plugin wrappers, unpacking single-bundle files without warnings;
 * **SourceMap Rebuilder**: Unpacks `.map` files into original human-readable `.vue` SFCs, TypeScript, and SCSS/Less code;
 * **API Endpoint & Crypto Analyzer**: Scans dumped JS for RESTful API routes, hardcoded Base URLs, AppIDs, and cryptographic algorithms (SM2/SM3/SM4, AES, RSA, HMAC).
 
@@ -112,78 +112,75 @@ pip install -e .
   ```
 
 
+* **Prefer a graphical desktop client rather than CLI?**:
+  ```bash
+  python examples/supabase_gui/app.py
+  ```
+  Launches the modern Fluent desktop interface with real-time log streaming, disk persistence, one-click copy, and visual proxy/AST deobfuscation!
+
+---
+
+<a id="gui"></a>
+## 🖥️ Graphical User Interface (GUI) Guide
+
+In addition to the powerful command-line interface (CLI), this project offers two desktop graphical user interfaces to fit various workflows:
+
+### 1. Modern Fluent WebGUI (Recommended / Hardware-Accelerated via WebView2)
+Adheres to Microsoft Fluent Design and Supabase dark-mode interface standards:
+- **Physical Disk Log Persistence**: Automatically writes streaming console logs to `records/logs/console_stream.log`;
+- **Interactive Operations**: Built-in physical buttons for **`[Copy All Logs]`**, **`[Open Local Log]`**, and **`[Locate Log Directory]`**;
+- **Visual Reverse & Debugging**: One-click actions for transparent proxy injection, AST deobfuscation, and Webpack chunk extraction;
+- **Integrated Attribution & Disclaimers**: In-app views displaying complete open-source GitHub repositories and anti-resale clauses.
+
+**Launch command**:
+```bash
+python examples/supabase_gui/app.py
+```
+> *System requirements: Windows 10/11 (Windows 11 includes WebView2 Runtime natively; Windows 10 requires Microsoft Edge WebView2 Evergreen Runtime).*
+
+### 2. PyQt6 Fluent Desktop Edition
+Traditional native Qt6 desktop client with automatic dark/light theme switching.
+
+**Launch command**:
+```bash
+# Method A: Via CLI subcommand
+wx-h5 gui
+
+# Method B: Direct Python module execution
+python -m wechat_h5_devtools.gui.main_window
+```
+> *Dependency installation: Run `pip install PyQt6 PyQt-Fluent-Widgets pywebview` first.*
+
+---
+
 <a id="faq"></a>
-## ❓ Troubleshooting & FAQ
+## ❓ Frequently Asked Questions (FAQ)
+
+To maintain a clean and concise main overview, all 11 detailed troubleshooting procedures (including proxy port conflict resolution, kernel decoupling, aggressive disk cache busting, multi-process PID filtering, Node 8GB heap expansion, and UAC elevation) are compiled into the dedicated guide:
+
+👉 **[Read the Complete Troubleshooting Guide: FAQ_EN.md](./docs/FAQ_EN.md)**
+
+### Top 3 Quick Answers:
 
 <details>
-<summary><strong>Q1 [Proxy Troubleshooting]: Why does the WeChat in-app browser fail to connect or display "Proxy Server Refused Connection"?</strong></summary>
+<summary><strong>Q1: 'wx-h5' is not recognized as a command?</strong></summary>
 
-> **Solution**: This is typically caused by local port occupation, system proxy overwrite, or unverified root certificates:
-> 1. **Port Conflicts**: Default proxy port `8899` might be occupied by other proxies/tools (Clash, v2rayN, Fiddler, Charles). Run `netstat -ano | findstr 8899` and specify an idle port using `wx-h5 proxy --port 8999`;
-> 2. **Network Sandbox**: WeChat 4.x isolates networking into `WeChatUtility.exe` / `WeChatAppEx.exe`. Ensure Windows Proxy Settings point to `127.0.0.1:8899` and disable conflicting TUN mode VPNs;
-> 3. **HTTPS Certificate**: If `NET::ERR_CERT_AUTHORITY_INVALID` is encountered, install the generated mitmproxy root certificate (`~/.mitmproxy/mitmproxy-ca-cert.cer`) into the Windows **Trusted Root Certification Authorities** store.
+> **Solution**: Run `pip install -r requirements.txt` and `pip install -e .` in the project root, or execute via `python main.py <command>`. See [FAQ_EN.md: Q1](./docs/FAQ_EN.md#q1-wx-h5-is-not-recognized-as-an-internal-or-external-command).
 </details>
 
 <details>
-<summary><strong>Q2 [Cross-Version Kernel Decoupling]: How does the tool maintain compatibility across WeChat 3.9/4.0/4.1 and RadiumWMPF upgrades without manual offsets?</strong></summary>
+<summary><strong>Q2: 'wx-h5 hook' reports existing WeChat process already running?</strong></summary>
 
-> **Solution**: Rather than hardcoded static memory offsets or legacy CLI switches (`--xweb-enable-inspect=1`), the suite uses a **Three-Tier Adaptive Decoupling & Signature Scanning** architecture:
-> 1. **Runtime Signature Scanning**: Dynamically scans Chromium VTable pointers, `DevToolsActivePort` branches, and Blink initialization routines;
-> 2. **Three-Tier Fallback**:
->    - **L1 Process Interception**: Frida hooks host `CreateProcessW` to inject `--remote-debugging-port` at process birth;
->    - **L2 Protocol Injection**: Hooks runtime `WeixinJSBridge` message dispatch to append `vConsole`;
->    - **L3 Transparent Proxy**: Streaming AST injection at the network transport layer;
-> 3. **Address Pools**: Built-in `addresses.<kernel_version>.json` configuration pool (e.g. Radium 25560) enables zero-recompile hot updates.
+> **Solution**: WeChat cannot be attached with remote debugging switches while running. Completely exit WeChat from the tray or run `taskkill /F /IM WeChat.exe /IM Weixin.exe /IM WeChatAppEx.exe /T` and retry. See [FAQ_EN.md: Q2](./docs/FAQ_EN.md#q2-wx-h5-hook-reports-existing-wechat-process-already-running).
 </details>
 
 <details>
-<summary><strong>Q3 [Strong Cache Busting]: Why do modified local scripts in Local Overrides fail to reflect upon refreshing?</strong></summary>
+<summary><strong>Q3: Offline browser displays 'Please open this link in WeChat'?</strong></summary>
 
-> **Solution**: WeChat enables aggressive **Chromium Disk Cache** and HTTP 304 revalidation for web resources:
-> 1. **Automatic Header Stripping**: `wx-h5 sandbox` and `wx-h5 proxy` strip `ETag` / `If-Modified-Since` and inject `Cache-Control: no-cache, no-store, must-revalidate` and `Pragma: no-cache`;
-> 2. **Disk Cache Purge**: Clear via vConsole **Storage -> Clear Cookies & Cache** or clear `%APPDATA%\Tencent\WeChat\radium\web\cache`;
-> 3. **URL Timestamping**: Append query parameter `?_t=<timestamp>` to bypass URL index caching.
+> **Solution**: Launch via `wx-h5 open "<URL>" --browser edge --ua ios`. At `document_start` (0ms), mock implementations for 30+ WeixinJSBridge APIs are injected before page execution. See [FAQ_EN.md: Q3](./docs/FAQ_EN.md#q3-offline-browser-shows-please-open-in-wechat-or-custom-jssdk-apis-fail).
 </details>
 
-<details>
-<summary><strong>Q4 [Multi-Process Pipeline Identification]: How does the tool isolate the target renderer among dozens of WeChat processes?</strong></summary>
-
-> **Solution**: WeChat 4.x adopts the Chromium multi-process sandbox architecture:
-> 1. **Process Topology**:
->    - `WeChat.exe`: Main UI & messaging broker;
->    - `WeChatAppEx.exe` / `WeixinExt.exe`: RadiumWMPF Chromium rendering sandbox (Hook target);
->    - `WeChatUtility.exe`: Background network & media codecs;
-> 2. **Pipeline Detector**: `wx-h5 hook` scans process command line arguments for `--type=renderer` and verifies loaded `radium.dll` modules to lock the exact PID;
-> 3. **Manual PID Binding**: Run `wx-h5 inspect --list` and bind with `wx-h5 hook --pid <PID>`.
-</details>
-
-<details>
-<summary><strong>Q5 [Large-Memory AST Deobfuscation]: Why does Node.js crash with "JavaScript heap out of memory" on large bundles (>5MB)?</strong></summary>
-
-> **Solution**: Large SPAs expand 20-40x in AST memory during node traversal:
-> 1. **V8 Heap Expansion**: Allocate 8GB+ memory before running:
->    `$env:NODE_OPTIONS="--max-old-space-size=8192"` (PowerShell) or `set NODE_OPTIONS=--max-old-space-size=8192` (CMD);
-> 2. **Chunked Deobfuscation (`--chunked`)**: Splits top-level Webpack module dictionaries and deobfuscates modules individually, reducing peak memory from 4GB to ~400MB;
-> 3. **Library Exclusion**: Pass `--exclude-libs` to skip known OSS libraries (`vue`, `react`, `echarts`).
-</details>
-
-<details>
-<summary><strong>Q6 [CDN Anti-Hotlinking & CORS Bypass]: How to resolve 403 Forbidden or CORS errors when loading remote assets?</strong></summary>
-
-> **Solution**:
-> 1. **Anti-Hotlinking Header Spoofing**: Automatically injects valid WeChat headers:
->    `Referer: https://servicewechat.com/` and genuine `MicroMessenger` User-Agent strings;
-> 2. **CORS & CSP Stripping**: Automatically strips upstream `Content-Security-Policy` and injects `Access-Control-Allow-Origin: *`.
-</details>
-
-<details>
-<summary><strong>Q7 [Privilege Elevation & UAC Isolation]: Why does Hook injection fail with "Access is denied (os error 5)"?</strong></summary>
-
-> **Solution**:
-> 1. **Integrity Level**: If WeChat is launched as Administrator (High Integrity), medium-integrity terminal processes cannot obtain `PROCESS_ALL_ACCESS` handles;
-> 2. **Elevation**: Right click PowerShell/CMD and select **Run as administrator**;
-> 3. **Native UAC**: Standalone executables are embedded with `requireAdministrator` manifests to auto-prompt for UAC elevation upon double-click.
-</details>
+> 📘 **For comprehensive solutions (proxy conflicts, 8GB OOM, 403 Forbidden CORS, UAC elevation, GUI errors)**, refer to [docs/FAQ_EN.md](./docs/FAQ_EN.md).
 
 ---
 
@@ -228,6 +225,48 @@ Join the **WeChat-H5-DevTools Community** to exchange reverse-engineering insigh
 - **WeChat (Recommended)**: `Sleep_Plan`
 - **Email**: `2603066228@qq.com` / `xuangeylw@gmail.com`
 - **GitHub Profile**: [@xuange520](https://github.com/xuange520)
+
+---
+
+<a id="attribution"></a>
+## 🙏 Attribution & Acknowledgements
+
+This project adheres strictly to academic and technical integrity in the open-source community. During development and security research, we have built upon, referenced, and drawn inspiration from the following open-source projects:
+
+### 1. Core Runtime Dependencies & Frameworks
+
+| Project | Repository (GitHub) | License | Role in WeChat-H5-DevTools |
+| :--- | :--- | :--- | :--- |
+| **Frida** | [frida/frida](https://github.com/frida/frida) | wxWindows | Dynamic code instrumentation toolkit for Windows WeChat `CreateProcessW` hooking and Chromium sandbox attachment |
+| **vConsole** | [Tencent/vConsole](https://github.com/Tencent/vConsole) | MIT | Tencent official mobile web developer panel for floating debug console injection without hotkeys |
+| **Eruda** | [liriliri/eruda](https://github.com/liriliri/eruda) | MIT | In-browser devtools for mobile browsers providing Elements DOM tree inspection, Network sniffing, and Storage editing |
+| **AST Deobfuscator Engine** | [j4k0xb/webcrack](https://github.com/j4k0xb/webcrack) | MIT | Deobfuscate, unminify, and unpack bundled JavaScript AST trees and Webpack chunks |
+| **Mitmproxy** | [mitmproxy/mitmproxy](https://github.com/mitmproxy/mitmproxy) | MIT | Interactive TLS-capable intercepting proxy for live header and body streaming rewrites |
+| **Babel** | [babel/babel](https://github.com/babel/babel) | MIT | Foundational compiler and AST parsing/traversal engine for JavaScript syntax reconstruction |
+| **PyWebView** | [r0x0r/pywebview](https://github.com/r0x0r/pywebview) | BSD-3-Clause | Lightweight cross-platform desktop GUI container leveraging native Windows 10/11 WebView2 hardware acceleration |
+| **Click** | [pallets/click](https://github.com/pallets/click) | BSD-3-Clause | Python composable command-line interface toolkit |
+| **Rich** | [Textualize/rich](https://github.com/Textualize/rich) | MIT | Terminal formatting, syntax highlighting, and progress tables |
+| **PyQt-Fluent-Widgets** | [zhiyiYo/PyQt-Fluent-Widgets](https://github.com/zhiyiYo/PyQt-Fluent-Widgets) | GPLv3 | Fluent Design styling inspiration for modern desktop interfaces |
+
+### 2. WeChat Research & Reference Ecosystem
+
+| Reference Project | Author / Org | Repository (GitHub) | Research Insights & Inspiration |
+| :--- | :--- | :--- | :--- |
+| **WeChatOpenDevTools-Python** | JaveleyQAQ | [JaveleyQAQ/WeChatOpenDevTools-Python](https://github.com/JaveleyQAQ/WeChatOpenDevTools-Python) | Pioneering memory offset scanning and DevTools unlocking mechanisms in WeChat |
+| **First** | notstarr | [notstarr/First](https://github.com/notstarr/First) | Comprehensive WeChat miniapp debugging framework combining Frida + CDP protocol architecture |
+| **e0e1-wx** | eeeeeeeeee-code | [eeeeeeeeee-code/e0e1-wx](https://github.com/eeeeeeeeee-code/e0e1-wx) | WeChat unpacking workflows, asset recovery, and automated analysis pipelines |
+| **WeChat-Hook** | aixed | [aixed/WeChat-Hook](https://github.com/aixed/WeChat-Hook) | Windows WeChat low-level hook techniques and internal protocol analysis |
+| **wechat-windows-versions** | tom-snow | [tom-snow/wechat-windows-versions](https://github.com/tom-snow/wechat-windows-versions) | Archival tracking of WeChat desktop client versions and RadiumWMPF kernel evolution |
+
+---
+
+<a id="disclaimer"></a>
+## ⚠️ Disclaimer
+
+1. **Research and Compliance Only**: This project is provided exclusively for legitimate cybersecurity research, educational learning, frontend interoperability testing, and developer debugging. Any malicious use or illegal activities are strictly forbidden.
+2. **User Responsibility**: Users assume full responsibility for their actions. The authors and contributors bear no liability for any direct or consequential damages, account restrictions, or legal disputes resulting from misuse.
+3. **Intellectual Property**: All third-party trademarks, company names, and logos belong to their respective owners.
+4. **Anti-Resale & Non-Commercial Notice**: This software and source code are **100% free and open-source**. **Reselling, repacking, or monetizing this tool on platforms such as Xianyu, Taobao, Pinduoduo, or automated card vending shops is strictly prohibited.** If you paid for this tool, please demand a full refund immediately.
 
 ---
 
