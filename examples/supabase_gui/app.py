@@ -38,7 +38,7 @@ class SupabaseBridgeApi:
             pid_info = f" (PID: {status.get('wechat_pid')})" if status.get("wechat_pid") else ""
             kernel_str = status.get("kernel") or "RadiumWMPF"
             initial_msg = (
-                f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] [START] WeChat-H5-DevTools v1.0.0 核心引擎已拉起\n"
+                f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] [START] WeChat-H5-DevTools v1.1.0 核心引擎已拉起\n"
                 f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] [PASS] 微信宿主感知: {status.get('status_text')}\n"
                 f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] [HOOK] {kernel_str} DevToolsActivePort 劫持就绪\n"
                 f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] [PROXY] 透明代理服务器已监听 127.0.0.1:8899\n"

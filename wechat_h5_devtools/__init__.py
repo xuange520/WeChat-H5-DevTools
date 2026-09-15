@@ -2,7 +2,7 @@ import os
 import sys
 from pathlib import Path
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 __author__ = "Antigravity Team"
 __description__ = "WeChat-H5-DevTools: 微信公众号与内嵌 H5 满血调试与逆向工程套件"
 
