@@ -12,7 +12,7 @@
 [![Frida 17+](https://img.shields.io/badge/Frida-17+-FF69B4?logo=frida&logoColor=white)](https://frida.re/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS-blue.svg)](https://github.com/)
 
-[核心功能](#features) · [实测效果](#screenshots) · [快速上手](#quickstart) · [公众号/H5调试SOP](#h5-sop) · [小程序调试SOP](#miniapp-sop) · [图形界面](#gui) · [命令行指南](#cli) · [实战工作流](#workflows) · [兼容矩阵](#matrix) · [常见问题](#faq) · [开源鸣谢](#attribution) · [赞助支持](#sponsor) · [交流群](#community) · [免责声明](#disclaimer)
+[核心功能](#features) · [实测效果](#screenshots) · [快速上手](#quickstart) · [公众号/H5调试SOP](#h5-sop) · [小程序调试SOP](#miniapp-sop) · [图形界面](#gui) · [命令行指南](#cli) · [实战工作流](#workflows) · [兼容矩阵](#matrix) · [版本下载与归档](#wechat-versions) · [常见问题](#faq) · [开源鸣谢](#attribution) · [赞助支持](#sponsor) · [交流群](#community) · [免责声明](#disclaimer)
 
 </div>
 
@@ -47,6 +47,18 @@
 >    ```
 > 2. 打开后看到的以纯数字命名的文件夹（如 `25510`、`17127`、`16389` 等），该数字即为本机微信当前正在生效使用的 **RadiumWMPF 内核版本号**！
 > 3. 工具内置了 `WeChatFinder` 与多源版本探测器，全自动适配上述所有版本，无需手动配置偏移。
+
+<a id="wechat-versions"></a><a id="版本下载与归档"></a><a id="微信版本下载与旧版本归档"></a>
+### 推荐微信版本下载与全量旧版本归档 (Download & Archive)
+
+如果您的电脑尚未安装微信、当前微信版本不受支持、或需要安装历史稳定版本进行兼容性回归验证：
+- **专有指引文档**：关于官方正式版、推荐黄金稳定版本及降级安装防数据覆盖注意事项，请直接查看项目文档 [微信版本指引与归档索引](docs/wechat_versions.md)。
+- **社区成熟历史版本库直接引用（免重复维护）**：
+  - **Windows 4.x 全量历史版本自动归档库（每小时检测，官方安装包与 SHA256）**：[cscnk52/wechat-windows-versions](https://github.com/cscnk52/wechat-windows-versions)（[Releases 下载区](https://github.com/cscnk52/wechat-windows-versions/releases)）
+  - **Windows 3.x 经典全量历史版本归档库（3000+ Stars，收录 3.9.x ~ 3.5.x 官方全量安装包）**：[tom-snow/wechat-windows-versions](https://github.com/tom-snow/wechat-windows-versions)（[Releases 下载区](https://github.com/tom-snow/wechat-windows-versions/releases)）
+  - **Windows 32位 (x86) 专区**：[tom-snow/wechat-windows-versions-x86](https://github.com/tom-snow/wechat-windows-versions-x86)
+  - **Mac 微信 3.x / 4.x 历史版本归档库（1100+ Stars）**：[zsbai/wechat-versions](https://github.com/zsbai/wechat-versions)（[Releases 下载区](https://github.com/zsbai/wechat-versions/releases)）
+  - **微信官网最新正式版**：[pc.weixin.qq.com](https://pc.weixin.qq.com/)
 
 ---
 
