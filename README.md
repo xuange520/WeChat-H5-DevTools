@@ -79,8 +79,9 @@ pip install -e .
     ```bash
     wx-h5 open
     ```
-  * 工具将**启动微信公众号内核浏览器 CDP 调试服务 (直连微信内置原生窗口，免弹外部浏览器)**，默认暴露 `62000` 端口 CDP。你可以在电脑自带 Edge/Chrome 浏览器中输入 `edge://inspect` 或 DevTools 链接直接调试微信内置原生文章窗口，或通过 `miniapp-cdp-mcp` 自动化操控！
-  * *(注：如需使用旧版脱机模拟沙箱，可使用 `wx-h5 open <url> --sandbox`)*
+  * 工具将**启动微信公众号内核浏览器 CDP 调试服务 (直连微信内置原生窗口，免弹外部浏览器)**，默认暴露 `62000` 端口 CDP。
+  * **Chrome 挂载方法**：打开 Google Chrome，地址栏输入 `chrome://inspect` -> 点击 `Configure...` -> 添加 `localhost:62000` -> 在 Remote Target 下点击目标文章的 `inspect` 即可挂载原生 F12！
+  * *(注：Edge 用户访问 `edge://inspect`；如需使用旧版脱机模拟沙箱，可使用 `wx-h5 open <url> --sandbox`)*
 
 * **需求 C：我想把混淆压缩的 JS 代码（一堆看不懂的 a, b, c 变量）还原成清晰好懂的代码？**
   * 在命令行输入：
@@ -125,7 +126,11 @@ pip install -e .
 
 ### 模式二：微信公众号内核浏览器 CDP 调试服务 (直连微信内置原生窗口，免弹外部浏览器)
 
-通过一行命令 `wx-h5 open` 即可启动微信公众号内核浏览器 CDP 调试服务，暴露 `62000` 端口 CDP 接口，直连微信内置原生文章窗口进行满血调试（免弹外部浏览器）。在 Edge/Chrome 输入 `edge://inspect` 或直接输入 `devtools://...` 即可直接调试微信内置文章窗口，或通过 `miniapp-cdp-mcp` 自动化操控。
+通过一行命令 `wx-h5 open` 即可启动微信公众号内核浏览器 CDP 调试服务，暴露 `62000` 端口 CDP 接口，直连微信内置原生文章窗口进行满血调试（免弹外部浏览器）：
+- **Google Chrome 挂载**：在 Chrome 地址栏访问 `chrome://inspect`，点击 Configure 添加 `localhost:62000`，点击目标下方的 `inspect` 即可弹出满血 F12 控制台；
+- **Microsoft Edge 挂载**：在 Edge 地址栏访问 `edge://inspect`，配置添加 `localhost:62000` 挂载；
+- **DevTools 秒级直达**：在 Chrome/Edge 中直接访问 `devtools://devtools/bundled/inspector.html?ws=127.0.0.1:62000`；
+- **AI 智能体操控**：通过 `miniapp-cdp-mcp` 自动化下发断点、获取源码与抓包。
 
 同时支持脱机模拟沙箱：如需使用旧版脱机模拟沙箱，可通过 `wx-h5 open <url> --sandbox` 拉起独立沙箱环境，自动并排开启原生 F12 开发者工具与 CDP 调试通道：
 
@@ -248,19 +253,36 @@ python examples/supabase_gui/app.py
    ```
    服务启动后将自动暴露微信内核 CDP 调试端口 `127.0.0.1:62000`。
 
-2. **在 Edge / Chrome 中直接连接并调试微信内置文章窗口**：
-   - 打开电脑自带的 **Microsoft Edge** 浏览器，在地址栏输入：
+2. **在 Google Chrome / Microsoft Edge 中挂载微信内置文章窗口**：
+
+   #### [推荐首选] 方式 A-1：Google Chrome 原生设备控制台挂载
+   - **步骤 1**：打开 Google Chrome 浏览器，在地址栏输入并回车：
      ```text
-     edge://inspect
+     chrome://inspect
      ```
-     *(若使用 **Google Chrome**，请输入 `chrome://inspect`)*
-   - 点击 **Configure...** 按钮，添加 Discover network targets：
+     *(或输入 `chrome://inspect/#devices`)*
+   - **步骤 2**：确认勾选 **Discover network targets**，点击右侧的 **Configure...** 按钮。
+   - **步骤 3**：在弹出的 Target discovery settings 列表中，输入并添加微信 CDP 调试网关地址：
      ```text
      localhost:62000
      ```
-   - 勾选保存后，下方 Target 列表将自动实时枚举出微信内置浏览器当前打开的全部文章与 H5 页面。
-   - 点击目标下方的 **inspect** 链接，即可弹出完整的 DevTools 开发者工具，直接对微信原生内置窗口进行 Console、Network 抓包、Elements 审查与 Sources 断点调试！
-   - 亦可直接在浏览器中访问终端输出的专属 DevTools 直连链接（形如 `devtools://devtools/bundled/inspector.html?...`）秒级进入调试。
+     *(或 `127.0.0.1:62000`)*，点击 **Done** 保存。
+   - **步骤 4**：保持微信内置浏览器打开公众号文章页面，Chrome 页面中的 **Remote Target** 下方将实时枚举出目标文章与网页卡片（包含页面标题与当前 URL）。
+   - **步骤 5**：点击目标页面下方的蓝色 **inspect** 链接，Chrome 将立即弹出满血独立 DevTools 开发者工具（F12），直接对微信原生内置窗口执行 Console 控制台指令、Network 网络抓包录制、Elements 实时 DOM 审查与 Sources 断点逆向调试！
+
+   #### 方式 A-2：Microsoft Edge 浏览器挂载
+   - 打开 Edge 浏览器，地址栏输入：
+     ```text
+     edge://inspect
+     ```
+   - 点击 **Configure...**，添加 `localhost:62000` 并确认。
+   - 在 Remote Target 列表中找到微信文章标题，点击 **inspect** 挂载原生 DevTools 调试面板。
+
+   #### 方式 A-3：Chrome / Edge 专属 DevTools URL 秒级直达
+   - 无需在 inspect 页面点选，直接在 Chrome 或 Edge 地址栏输入直连链接回车直达：
+     ```text
+     devtools://devtools/bundled/inspector.html?ws=127.0.0.1:62000
+     ```
 
 3. **通过 miniapp-cdp-mcp 进行 AI 自动化操控**：
    - 工具暴露的 `http://127.0.0.1:62000` 标准 CDP 接口原生兼容 **`miniapp-cdp-mcp`**、Playwright 与 Puppeteer。
