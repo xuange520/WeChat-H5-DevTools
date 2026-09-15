@@ -615,6 +615,7 @@
               定位日志目录
             </button>
             <button class="btn btn-secondary" onclick="clearLogs()">清空屏幕</button>
+            <button class="btn btn-secondary" onclick="clearDiskLog()">清空磁盘日志</button>
           </div>
         </div>
 
@@ -625,7 +626,7 @@
             <code style="color:var(--text-main);background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;">records/logs/console_stream.log</code>
             <span style="color:var(--ink-mute);">| 物理磁盘增量安全写入，重启后日志不丢失</span>
           </div>
-          <span style="color:var(--accent-success);font-weight:500;">物理落盘已激活</span>
+          <span id="logFileStatusBadge" style="color:var(--accent-success);font-weight:500;">物理落盘已激活</span>
         </div>
 
         <div class="terminal-window">
@@ -932,6 +933,9 @@
         target.classList.add('active');
         element.classList.add('active');
       }
+      if (viewId === 'logs') {
+        updateLogFileInfo();
+      }
     }
 
     function copyAuthor() {
@@ -1082,7 +1086,16 @@
 
     function triggerScan() {
       showToast("敏感凭据深度审计中...");
-      appendLog("[AUDIT]", "正则引擎扫描完成，捕获 1 个高危 AppSecret 凭据", "tag-warn");
+      if (window.pywebview && window.pywebview.api && window.pywebview.api.run_secret_audit) {
+        window.pywebview.api.run_secret_audit().then(res => {
+          appendLog("[AUDIT]", res.message || "敏感凭据扫描完成", "tag-warn");
+          showToast(res.message || "敏感凭据扫描完成");
+        }).catch(err => {
+          appendLog("[ERROR]", "审计异常: " + err, "tag-error");
+        });
+      } else {
+        appendLog("[AUDIT]", "正则引擎扫描完成，捕获 1 个高危 AppSecret 凭据", "tag-warn");
+      }
     }
 
     function addMockRule() {
@@ -1158,6 +1171,7 @@
       if (window.pywebview && window.pywebview.api && window.pywebview.api.get_system_status) {
         window.pywebview.api.get_system_status().then(syncSystemStatus).catch(() => {});
       }
+      updateLogFileInfo();
     }
     document.addEventListener('DOMContentLoaded', initSystemInspection);
     window.addEventListener('pywebviewready', initSystemInspection);
@@ -1197,6 +1211,33 @@
       const body = document.getElementById('terminalBody');
       if (body) body.innerHTML = '';
       showToast("终端日志已清空");
+    }
+
+    function clearDiskLog() {
+      if (window.pywebview && window.pywebview.api && window.pywebview.api.clear_log_file) {
+        window.pywebview.api.clear_log_file().then(res => {
+          showToast(res.message || "本地磁盘日志已清空");
+          clearLogs();
+          appendLog("[INFO]", "本地磁盘日志已由用户清空", "tag-info");
+          updateLogFileInfo();
+        }).catch(err => {
+          showToast("清空日志异常: " + err);
+        });
+      } else {
+        clearLogs();
+        showToast("本地日志已清空");
+      }
+    }
+
+    function updateLogFileInfo() {
+      if (window.pywebview && window.pywebview.api && window.pywebview.api.get_log_file_info) {
+        window.pywebview.api.get_log_file_info().then(info => {
+          const badge = document.getElementById('logFileStatusBadge');
+          if (badge && info.exists) {
+            badge.innerText = `物理落盘已激活 (${info.size_kb} KB)`;
+          }
+        }).catch(() => {});
+      }
     }
 
     let toastTimer = null;

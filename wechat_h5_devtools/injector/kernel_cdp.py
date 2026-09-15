@@ -200,18 +200,39 @@ class TargetInfo:
 class TargetManager:
     """活跃 Target 动态管理器"""
 
-    def __init__(self, cdp_port: int = DEFAULT_CDP_PORT):
+    def __init__(self, cdp_port: int = DEFAULT_CDP_PORT, initial_url: Optional[str] = None):
         self.cdp_port = cdp_port
         self.targets: Dict[str, TargetInfo] = {}
         self.active_context_id: Optional[str] = None
 
+        init_url = initial_url or "about:blank"
+        init_title = "微信公众号 / 内置浏览器页面 (就绪)"
+        if initial_url:
+            if "mp.weixin.qq.com" in initial_url:
+                init_title = f"微信公众号推文 ({initial_url[:45]}...)"
+            else:
+                init_title = f"微信页面 ({initial_url[:45]})"
+
         # 初始化默认页面 Target
         self.default_target = TargetInfo(
             target_id="default",
-            title="微信公众号 / 内置浏览器页面 (就绪)",
-            url="about:blank"
+            title=init_title,
+            url=init_url
         )
         self.targets["default"] = self.default_target
+
+    def update_target_url(self, target_id: str, new_url: str, new_title: Optional[str] = None) -> TargetInfo:
+        """动态更新指定或默认目标的 URL 与 Title"""
+        target = self.get_target(target_id)
+        target.url = new_url
+        if new_title:
+            target.title = new_title
+        elif "mp.weixin.qq.com" in new_url:
+            target.title = f"微信公众号推文 ({new_url[:45]}...)"
+        elif new_url.startswith("http://") or new_url.startswith("https://"):
+            target.title = f"微信页面 ({new_url[:45]})"
+        target.last_active_at = time.time()
+        return target
 
     def get_all_targets(self) -> List[TargetInfo]:
         """获取所有目标列表"""
@@ -667,14 +688,16 @@ class KernelCDPEngine:
         debug_port: int = DEFAULT_DEBUG_PORT,
         cdp_port: int = DEFAULT_CDP_PORT,
         auto_hook: bool = True,
-        custom_version: Optional[int] = None
+        custom_version: Optional[int] = None,
+        initial_url: Optional[str] = None
     ):
         self.debug_port = debug_port
         self.cdp_port = cdp_port
         self.auto_hook = auto_hook
         self.custom_version = custom_version
+        self.initial_url = initial_url
 
-        self.target_manager = TargetManager(cdp_port=self.cdp_port)
+        self.target_manager = TargetManager(cdp_port=self.cdp_port, initial_url=self.initial_url)
         self.hook_manager = ProcessHookManager(custom_version=self.custom_version)
         self.codec = ProtocolCodec()
 
@@ -687,7 +710,7 @@ class KernelCDPEngine:
         self.cdp_server = None
 
     @staticmethod
-    def check_port(port: int, host: str = "127.0.0.1") -> Tuple[bool, Optional[str]]:
+    def check_port(port: int, host: str = "0.0.0.0") -> Tuple[bool, Optional[str]]:
         """检测指定端口是否可用，若占用则尝试排查占用进程"""
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
@@ -917,6 +940,27 @@ class KernelCDPEngine:
                             await websocket.send(json.dumps(evt, ensure_ascii=False))
                         continue
 
+                    elif method == "Target.getTargetInfo":
+                        target_id = cmd.get("params", {}).get("targetId", "default")
+                        t = self.target_manager.get_target(target_id)
+                        resp = {
+                            "id": msg_id,
+                            "result": {
+                                "targetInfo": t.to_target_info() if t else self.target_manager.default_target.to_target_info()
+                            }
+                        }
+                        await websocket.send(json.dumps(resp, ensure_ascii=False))
+                        continue
+
+                    elif method in ("Target.setAutoAttach", "Target.attachToTarget", "Target.detachFromTarget"):
+                        target_id = cmd.get("params", {}).get("targetId", "default")
+                        resp = {
+                            "id": msg_id,
+                            "result": {"sessionId": f"session_{target_id}"} if method == "Target.attachToTarget" else {}
+                        }
+                        await websocket.send(json.dumps(resp, ensure_ascii=False))
+                        continue
+
                     elif method == "Browser.getVersion":
                         ver_resp = {
                             "id": msg_id,
@@ -931,7 +975,155 @@ class KernelCDPEngine:
                         await websocket.send(json.dumps(ver_resp, ensure_ascii=False))
                         continue
 
-                    # 2. 其它通用 CDP 指令 (Page/DOM/Runtime/Network/Debugger 等) 转发至微信内核
+                    # 2. 页面导航与历史记录增强 (Page.navigate / Page.getNavigationHistory / Page.getResourceTree)
+                    elif method == "Page.navigate":
+                        nav_url = cmd.get("params", {}).get("url", "")
+                        target = self.target_manager.update_target_url("default", nav_url)
+                        log_info(f"[Page.navigate] DevTools 地址栏触发导航 -> URL: {nav_url}")
+
+                        frame_id = "wechat_main_frame"
+                        loader_id = f"loader_{int(time.time() * 1000)}"
+
+                        # 如果微信内核 flue 已连接，同步转发一份给内核
+                        if self.flue_clients:
+                            await self.send_to_flue(text_msg, jscontext_id=self.target_manager.active_context_id or "")
+
+                        # 立即回复 DevTools 客户端
+                        nav_resp = {
+                            "id": msg_id,
+                            "result": {
+                                "frameId": frame_id,
+                                "loaderId": loader_id
+                            }
+                        }
+                        await websocket.send(json.dumps(nav_resp, ensure_ascii=False))
+
+                        # 派发全生命周期事件流，驱动 DevTools 更新界面与地址栏
+                        origin = nav_url.split("?")[0] if nav_url else "about:blank"
+                        events = [
+                            {
+                                "method": "Page.frameStartedLoading",
+                                "params": {"frameId": frame_id}
+                            },
+                            {
+                                "method": "Page.frameNavigated",
+                                "params": {
+                                    "frame": {
+                                        "id": frame_id,
+                                        "loaderId": loader_id,
+                                        "url": nav_url,
+                                        "domainAndRegistry": "weixin.qq.com" if "weixin.qq.com" in nav_url else "",
+                                        "securityOrigin": origin,
+                                        "mimeType": "text/html"
+                                    }
+                                }
+                            },
+                            {
+                                "method": "Page.domContentEventFired",
+                                "params": {"timestamp": time.time()}
+                            },
+                            {
+                                "method": "Page.loadEventFired",
+                                "params": {"timestamp": time.time()}
+                            },
+                            {
+                                "method": "Page.frameStoppedLoading",
+                                "params": {"frameId": frame_id}
+                            }
+                        ]
+                        for evt in events:
+                            await websocket.send(json.dumps(evt, ensure_ascii=False))
+
+                        # 广播通知全局目标状态更新 (供 chrome://inspect 同步刷新)
+                        changed_evt = {
+                            "method": "Target.targetInfoChanged",
+                            "params": {"targetInfo": target.to_target_info()}
+                        }
+                        await self.broadcast_to_cdp(json.dumps(changed_evt, ensure_ascii=False))
+                        continue
+
+                    elif method == "Page.getNavigationHistory":
+                        target = self.target_manager.get_target("default")
+                        current_url = target.url if target else "about:blank"
+                        current_title = target.title if target else "微信公众号 / 内置浏览器页面"
+                        nav_hist_resp = {
+                            "id": msg_id,
+                            "result": {
+                                "currentIndex": 0,
+                                "entries": [
+                                    {
+                                        "id": 1,
+                                        "url": current_url,
+                                        "userTypedURL": current_url,
+                                        "title": current_title,
+                                        "transitionType": "typed"
+                                    }
+                                ]
+                            }
+                        }
+                        await websocket.send(json.dumps(nav_hist_resp, ensure_ascii=False))
+                        continue
+
+                    elif method == "Page.getResourceTree":
+                        target = self.target_manager.get_target("default")
+                        current_url = target.url if target else "about:blank"
+                        tree_resp = {
+                            "id": msg_id,
+                            "result": {
+                                "frameTree": {
+                                    "frame": {
+                                        "id": "wechat_main_frame",
+                                        "loaderId": "loader_init",
+                                        "url": current_url,
+                                        "domainAndRegistry": "weixin.qq.com" if "weixin.qq.com" in current_url else "",
+                                        "securityOrigin": current_url,
+                                        "mimeType": "text/html"
+                                    },
+                                    "resources": []
+                                }
+                            }
+                        }
+                        await websocket.send(json.dumps(tree_resp, ensure_ascii=False))
+                        continue
+
+                    elif method == "Page.reload":
+                        target = self.target_manager.get_target("default")
+                        if self.flue_clients:
+                            await self.send_to_flue(text_msg, jscontext_id=self.target_manager.active_context_id or "")
+                        await websocket.send(json.dumps({"id": msg_id, "result": {}}))
+                        reload_evt = {
+                            "method": "Page.frameNavigated",
+                            "params": {
+                                "frame": {
+                                    "id": "wechat_main_frame",
+                                    "loaderId": f"loader_{int(time.time()*1000)}",
+                                    "url": target.url,
+                                    "securityOrigin": target.url,
+                                    "mimeType": "text/html"
+                                }
+                            }
+                        }
+                        await websocket.send(json.dumps(reload_evt, ensure_ascii=False))
+                        continue
+
+                    elif method == "Page.stopLoading":
+                        await websocket.send(json.dumps({"id": msg_id, "result": {}}))
+                        continue
+
+                    # 3. 兜底保障：当微信内核尚未连接时，对基础探针指令提供合成响应，杜绝 DevTools 挂死假死
+                    if not self.flue_clients:
+                        if method in (
+                            "Page.enable", "Network.enable", "Runtime.enable", "DOM.enable",
+                            "CSS.enable", "Log.enable", "Security.enable", "Overlay.enable",
+                            "Emulation.setFocusEmulationEnabled", "Runtime.runIfWaitingForDebugger"
+                        ):
+                            await websocket.send(json.dumps({"id": msg_id, "result": {}}))
+                            continue
+                        elif method == "Debugger.enable":
+                            await websocket.send(json.dumps({"id": msg_id, "result": {"debuggerId": "wechat_debugger"}}))
+                            continue
+
+                    # 4. 其它通用 CDP 指令 (Page/DOM/Runtime/Network/Debugger 等) 转发至微信内核
                     await self.send_to_flue(text_msg, jscontext_id=self.target_manager.active_context_id or "")
 
                 except Exception as e:
@@ -1050,14 +1242,16 @@ def run_cdp_engine(
     debug_port: int = DEFAULT_DEBUG_PORT,
     cdp_port: int = DEFAULT_CDP_PORT,
     no_hook: bool = False,
-    version: Optional[int] = None
+    version: Optional[int] = None,
+    initial_url: Optional[str] = None
 ):
     """启动入口"""
     engine = KernelCDPEngine(
         debug_port=debug_port,
         cdp_port=cdp_port,
         auto_hook=not no_hook,
-        custom_version=version
+        custom_version=version,
+        initial_url=initial_url
     )
 
     try:
@@ -1074,11 +1268,13 @@ if __name__ == "__main__":
     parser.add_argument("--cdp-port", "-c", type=int, default=DEFAULT_CDP_PORT, help="标准 CDP 兼容端口 (默认: 62000)")
     parser.add_argument("--version", "-v", type=int, default=None, help="手动指定 WMPF 内核版本号 (如: 25510)")
     parser.add_argument("--no-hook", action="store_true", default=False, help="仅启动网关服务，不执行 Frida 注入")
+    parser.add_argument("--url", "-u", default=None, help="初始目标文章链接 URL")
     args = parser.parse_args()
 
     run_cdp_engine(
         debug_port=args.debug_port,
         cdp_port=args.cdp_port,
         no_hook=args.no_hook,
-        version=args.version
+        version=args.version,
+        initial_url=args.url
     )

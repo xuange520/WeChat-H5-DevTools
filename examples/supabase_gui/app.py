@@ -77,6 +77,7 @@ class SupabaseBridgeApi:
         exists = LOG_FILE.exists()
         size = LOG_FILE.stat().st_size if exists else 0
         return {
+            "success": True,
             "exists": exists,
             "path": str(LOG_FILE),
             "filename": LOG_FILE.name,

@@ -66,13 +66,15 @@ def hook_cmd(path):
 @click.option("--cdp-port", "-c", default=DEFAULT_CDP_PORT, help="标准 CDP 兼容端口 (默认: 62000)")
 @click.option("--version", "-v", default=None, type=int, help="手动指定 WMPF 内核版本号 (如: 25510)")
 @click.option("--no-hook", is_flag=True, default=False, help="仅启动网关服务，不执行 Frida 注入")
-def cdp_cmd(debug_port, cdp_port, version, no_hook):
+@click.option("--url", "-u", default=None, help="初始目标文章链接 URL (如: https://mp.weixin.qq.com/s/...)")
+def cdp_cmd(debug_port, cdp_port, version, no_hook, url):
     print_banner()
     run_cdp_engine(
         debug_port=debug_port,
         cdp_port=cdp_port,
         no_hook=no_hook,
-        version=version
+        version=version,
+        initial_url=url
     )
 
 @cli.command(name="proxy", help="启动 vConsole 透明代理注入网关 (支持微信免 F12 浮动控制台与本地文件替换)")
@@ -118,7 +120,7 @@ def open_cmd(url, port, no_kill, sandbox, browser, ua):
         log_info("已就绪！请直接在电脑微信内点击任意公众号推文或打开内置 H5，CDP 服务将自动侦听并捕获活动目标。")
 
     try:
-        run_cdp_engine(cdp_port=port)
+        run_cdp_engine(cdp_port=port, initial_url=url)
     except Exception as e:
         log_error(f"微信内核 CDP 调试服务异常退出: {e}")
 
