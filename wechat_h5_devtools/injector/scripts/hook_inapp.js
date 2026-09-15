@@ -1,18 +1,16 @@
 /**
  * WeChat-H5-DevTools 进程 Hook 脚本 (Frida 17+ 兼容版)
- * 功能: 拦截微信主进程 CreateProcessW，向渲染器及内嵌浏览器注入调试与 vConsole 参数
+ * 功能: 拦截微信主进程及子进程 CreateProcessW，注入 WeChat 4.x / 3.x 全量调试参数
  */
 
 var cpsPtr = null;
 try {
-    cpsPtr = Process.getModuleByName("kernel32.dll").getExportByName("CreateProcessW");
+    cpsPtr = Process.getModuleByName("kernel32.dll").findExportByName("CreateProcessW");
 } catch (e) {
-    try {
-        cpsPtr = Module.findExportByName("kernel32.dll", "CreateProcessW");
-    } catch (e2) {
-        cpsPtr = Module.findExportByName(null, "CreateProcessW");
-    }
+    cpsPtr = Module.findExportByName(null, "CreateProcessW");
 }
+
+var allocatedStrings = [];
 
 if (cpsPtr) {
     send("[+] 核心 API CreateProcessW Hook 挂载成功: " + cpsPtr);
@@ -22,18 +20,39 @@ if (cpsPtr) {
             if (this.cmdlinePtr) {
                 var cmd = this.cmdlinePtr.readUtf16String();
                 if (cmd && (cmd.indexOf("WeChatAppEx.exe") !== -1 || cmd.indexOf("WeixinExt.exe") !== -1 || cmd.indexOf("--type=renderer") !== -1)) {
-                    // 仅针对非崩溃收集器的渲染与 Web 进程注入
-                    if (cmd.indexOf("crashpad") === -1 && cmd.indexOf("--enable-vconsole") === -1) {
+                    // 过滤崩溃收集器
+                    if (cmd.indexOf("crashpad") === -1) {
                         var newCmd = cmd;
-                        if (newCmd.indexOf("--log-level=2") !== -1) {
-                            newCmd = newCmd.replaceAll("--log-level=2", "--log-level=0 --enable-vconsole --xweb-enable-inspect=1 --chrome-inspector");
-                        } else {
-                            newCmd = newCmd + " --enable-vconsole --xweb-enable-inspect=1 --chrome-inspector";
+
+                        // 1. 核心无沙箱支持（解锁外部调试与 DOM 探测）
+                        if (newCmd.indexOf("--no-sandbox") === -1) {
+                            newCmd += " --no-sandbox";
+                        }
+
+                        // 2. 微信 4.x flue.dll 专属原生开发者工具开关
+                        if (newCmd.indexOf("--enable-chrome-inspector") === -1) {
+                            newCmd += " --enable-chrome-inspector";
+                        }
+                        if (newCmd.indexOf("--enable-vconsole") === -1) {
+                            newCmd += " --enable-vconsole";
+                        }
+
+                        // 3. 微信 3.x 兼容开关
+                        if (newCmd.indexOf("--xweb-enable-inspect") === -1) {
+                            newCmd += " --xweb-enable-inspect=1";
+                        }
+
+                        // 4. 主 Broker 进程开启远程 CDP 调试端口
+                        if (cmd.indexOf("--type=") === -1 && newCmd.indexOf("--remote-debugging-port") === -1) {
+                            newCmd += " --remote-debugging-port=8899";
                         }
 
                         this.injectedCmd = newCmd;
-                        // 动态分配全新的 UTF-16 内存缓冲区，防止原地覆写越界
-                        args[1] = Memory.allocUtf16String(newCmd);
+                        // 分配 UTF-16 内存缓冲区并存入全局数组防止 GC
+                        var buf = Memory.allocUtf16String(newCmd);
+                        allocatedStrings.push(buf);
+                        args[1] = buf;
+                        this.context.rdx = buf;
                     }
                 }
             }
