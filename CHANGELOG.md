@@ -22,7 +22,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - **SOP 规范与操作指引**:
   - 系统化梳理微信公众号推文 / H5 页面 4 大最快调试操作顺序（vConsole 绿标注入、原生右键检查、DevTools 地址栏直达、脱机沙箱双开 F12）。
   - 微信小程序 4 步标准调试 SOP。
-  - 详细解答初次进入 DevTools 显示 `about:blank` 的 Chromium 多进程隔离底层根因。
+  - 聚焦实战：微信推文直奔 4 大实测最快调试路径（微信内绿标/原生右键/地址栏秒达/沙箱双开）。
 
 ### [CHANGED]
 - `wx-h5 open` 默认行为全面升级为启动微信内核 CDP 调试服务，直连微信内置原生窗口（免弹外部浏览器）；增加 `--sandbox` 参数作为旧版脱机模拟沙箱回退开关。
