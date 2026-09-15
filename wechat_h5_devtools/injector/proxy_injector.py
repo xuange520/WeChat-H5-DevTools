@@ -3,15 +3,118 @@
 功能: 在微信或浏览器通过该代理访问网页时，自动在 HTML <head> 首行注入 vConsole / Eruda 调试器。
 """
 
+import ssl
+import gzip
+import datetime
 import http.server
 import socketserver
 import urllib.request
-from typing import Optional
+from typing import Optional, Tuple, Dict
 from ..utils.logger import log_info, log_warn, log_step
 
 import mimetypes
 import urllib.parse
 from pathlib import Path
+
+try:
+    from cryptography import x509
+    from cryptography.x509.oid import NameOID
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.asymmetric import rsa
+    from cryptography.hazmat.primitives import serialization
+    HAS_CRYPTO = True
+except ImportError:
+    HAS_CRYPTO = False
+
+class CertificateManager:
+    """自动化动态证书生成与管理引擎 (支持 HTTPS 微信推文与 H5 无感解密与脚本注入)"""
+    _instance: Optional["CertificateManager"] = None
+
+    def __init__(self, ca_dir: Optional[Path] = None):
+        if not ca_dir:
+            ca_dir = Path(__file__).resolve().parent.parent.parent / "resources" / "ca"
+        self.ca_dir = ca_dir
+        self.ca_dir.mkdir(parents=True, exist_ok=True)
+        self.ca_cert_path = self.ca_dir / "ca.crt"
+        self.ca_key_path = self.ca_dir / "ca.key"
+        self._cert_cache: Dict[str, Tuple[str, str]] = {}
+        self._init_ca()
+
+    @classmethod
+    def get_instance(cls) -> "CertificateManager":
+        if cls._instance is None:
+            cls._instance = CertificateManager()
+        return cls._instance
+
+    def _init_ca(self):
+        if not HAS_CRYPTO:
+            return
+        if not self.ca_cert_path.exists() or not self.ca_key_path.exists():
+            root_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+            subject = issuer = x509.Name([
+                x509.NameAttribute(NameOID.COUNTRY_NAME, "CN"),
+                x509.NameAttribute(NameOID.ORGANIZATION_NAME, "WeChat-H5-DevTools"),
+                x509.NameAttribute(NameOID.COMMON_NAME, "WeChat H5 DevTools Root CA"),
+            ])
+            root_cert = (
+                x509.CertificateBuilder()
+                .subject_name(subject)
+                .issuer_name(issuer)
+                .public_key(root_key.public_key())
+                .serial_number(x509.random_serial_number())
+                .not_valid_before(datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=1))
+                .not_valid_after(datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=3650))
+                .add_extension(x509.BasicConstraints(ca=True, path_length=None), critical=True)
+                .sign(root_key, hashes.SHA256())
+            )
+            self.ca_cert_path.write_bytes(root_cert.public_bytes(serialization.Encoding.PEM))
+            self.ca_key_path.write_bytes(root_key.private_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PrivateFormat.TraditionalOpenSSL,
+                encryption_algorithm=serialization.NoEncryption()
+            ))
+
+        self.root_cert = x509.load_pem_x509_certificate(self.ca_cert_path.read_bytes())
+        self.root_key = serialization.load_pem_private_key(self.ca_key_path.read_bytes(), password=None)
+
+    def get_cert_for_host(self, hostname: str) -> Optional[Tuple[str, str]]:
+        if not HAS_CRYPTO:
+            return None
+        if hostname in self._cert_cache:
+            return self._cert_cache[hostname]
+
+        cert_file = self.ca_dir / f"{hostname}.crt"
+        key_file = self.ca_dir / f"{hostname}.key"
+        if cert_file.exists() and key_file.exists():
+            res = (str(cert_file), str(key_file))
+            self._cert_cache[hostname] = res
+            return res
+
+        host_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        host_subject = x509.Name([
+            x509.NameAttribute(NameOID.COUNTRY_NAME, "CN"),
+            x509.NameAttribute(NameOID.COMMON_NAME, hostname),
+        ])
+        host_cert = (
+            x509.CertificateBuilder()
+            .subject_name(host_subject)
+            .issuer_name(self.root_cert.subject)
+            .public_key(host_key.public_key())
+            .serial_number(x509.random_serial_number())
+            .not_valid_before(datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=1))
+            .not_valid_after(datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=365))
+            .add_extension(x509.SubjectAlternativeName([x509.DNSName(hostname)]), critical=False)
+            .sign(self.root_key, hashes.SHA256())
+        )
+        cert_file.write_bytes(host_cert.public_bytes(serialization.Encoding.PEM))
+        key_file.write_bytes(host_key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.TraditionalOpenSSL,
+            encryption_algorithm=serialization.NoEncryption()
+        ))
+        res = (str(cert_file), str(key_file))
+        self._cert_cache[hostname] = res
+        return res
 
 VCONSOLE_INJECTION_SNIPPET = """
 <!-- WeChat-H5-DevTools Injected vConsole -->
@@ -225,13 +328,35 @@ class ProxyHTTPHandler(http.server.BaseHTTPRequestHandler):
         except Exception as e:
             self.send_error(502, f"Proxy Error: {e}")
 
+    def _is_mitm_target(self, host: str) -> bool:
+        """判断是否为需要自动注入 vConsole 的微信或公众号网页目标"""
+        h = host.lower()
+        return (
+            h == "mp.weixin.qq.com" or
+            h.endswith(".weixin.qq.com") or
+            h.endswith(".wechat.com") or
+            h.endswith(".tenpay.com") or
+            h == "res.wx.qq.com"
+        )
+
     def do_CONNECT(self):
-        """处理 HTTPS CONNECT 隧道请求"""
+        """处理 HTTPS CONNECT 隧道请求 (支持微信公众号推文 TLS MITM 透明解密与全自动 vConsole 挂载)"""
         import socket
         import select
 
-        host, port = self.path.split(":")
-        port = int(port)
+        host, port_str = self.path.split(":")
+        port = int(port_str)
+
+        if HAS_CRYPTO and self._is_mitm_target(host):
+            self._handle_mitm(host, port)
+            return
+
+        # 回退至原生 TCP 盲转发隧道
+        self._handle_passthrough(host, port)
+
+    def _handle_passthrough(self, host: str, port: int):
+        import socket
+        import select
 
         try:
             target_sock = socket.create_connection((host, port), timeout=10)
@@ -241,9 +366,7 @@ class ProxyHTTPHandler(http.server.BaseHTTPRequestHandler):
             conns = [self.connection, target_sock]
             while True:
                 r, w, x = select.select(conns, [], conns, 10)
-                if x:
-                    break
-                if not r:
+                if x or not r:
                     break
                 for s in r:
                     other = target_sock if s is self.connection else self.connection
@@ -252,10 +375,100 @@ class ProxyHTTPHandler(http.server.BaseHTTPRequestHandler):
                         return
                     other.sendall(data)
         except Exception:
-            self.send_error(502, "Bad Gateway")
+            pass
         finally:
             try:
                 target_sock.close()
+            except Exception:
+                pass
+
+    def _handle_mitm(self, host: str, port: int):
+        """TLS 中间人解密，自动向公众号文章与微信 H5 HTML 注入 vConsole"""
+        cert_mgr = CertificateManager.get_instance()
+        cert_pair = cert_mgr.get_cert_for_host(host)
+        if not cert_pair:
+            self._handle_passthrough(host, port)
+            return
+
+        cert_file, key_file = cert_pair
+        try:
+            self.send_response(200, "Connection Established")
+            self.end_headers()
+        except Exception:
+            return
+
+        try:
+            ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            ctx.load_cert_chain(certfile=cert_file, keyfile=key_file)
+            tls_sock = ctx.wrap_socket(self.connection, server_side=True)
+        except Exception:
+            return
+
+        try:
+            rfile = tls_sock.makefile("rb")
+            wfile = tls_sock.makefile("wb")
+
+            req_line = rfile.readline().decode("iso-8859-1")
+            if not req_line:
+                return
+            parts = req_line.strip().split()
+            if len(parts) < 2:
+                return
+            method, path = parts[0], parts[1]
+
+            headers = {}
+            while True:
+                line = rfile.readline().decode("iso-8859-1")
+                if line in ("\r\n", "\n", ""):
+                    break
+                if ":" in line:
+                    k, v = line.split(":", 1)
+                    headers[k.strip()] = v.strip()
+
+            content_len = int(headers.get("Content-Length", 0))
+            post_body = rfile.read(content_len) if content_len > 0 else None
+
+            # 构造真实向上游请求
+            upstream_url = f"https://{host}:{port}{path}"
+            req_headers = {k: v for k, v in headers.items() if k.lower() not in ["host", "accept-encoding", "content-length"]}
+            if "User-Agent" not in req_headers:
+                req_headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 MicroMessenger/7.0.20.1781(0x6700143B) NetType/WIFI WindowsWechat(0x63090a13) XWEB/25510"
+
+            req = urllib.request.Request(upstream_url, data=post_body, headers=req_headers, method=method)
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                resp_body = resp.read()
+                content_type = resp.headers.get("Content-Type", "")
+                content_encoding = resp.headers.get("Content-Encoding", "").lower()
+
+                # 如果有 gzip，先解压
+                if "gzip" in content_encoding:
+                    try:
+                        resp_body = gzip.decompress(resp_body)
+                    except Exception:
+                        pass
+
+                # 自动无感注入 vConsole
+                if "text/html" in content_type:
+                    if b"<head>" in resp_body:
+                        resp_body = resp_body.replace(b"<head>", b"<head>" + VCONSOLE_INJECTION_SNIPPET, 1)
+                    elif b"<body>" in resp_body:
+                        resp_body = resp_body.replace(b"<body>", b"<body>" + VCONSOLE_INJECTION_SNIPPET, 1)
+                    else:
+                        resp_body = VCONSOLE_INJECTION_SNIPPET + resp_body
+                    log_info(f"[PASS] [微信公众号推文自动注入成功] {upstream_url} (已自动挂载 vConsole)")
+
+                wfile.write(f"HTTP/1.1 {resp.status} OK\r\n".encode("ascii"))
+                for k, v in resp.headers.items():
+                    if k.lower() not in ["content-length", "content-encoding", "transfer-encoding"]:
+                        wfile.write(f"{k}: {v}\r\n".encode("iso-8859-1"))
+                wfile.write(f"Content-Length: {len(resp_body)}\r\n\r\n".encode("ascii"))
+                wfile.write(resp_body)
+                wfile.flush()
+        except Exception:
+            pass
+        finally:
+            try:
+                tls_sock.close()
             except Exception:
                 pass
 

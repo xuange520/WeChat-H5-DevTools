@@ -30,6 +30,26 @@ class ProcessHooker:
         import psutil
         import threading
 
+        # 步骤 0: 检查并自动拉起后台透明注入网关 (支持 HTTPS 推文无感解密并自动挂载 vConsole)
+        def ensure_proxy_daemon():
+            import socket
+            s = socket.socket()
+            try:
+                s.connect(("127.0.0.1", 8899))
+                s.close()
+            except Exception:
+                try:
+                    from .proxy_injector import ProxyInjector
+                    proxy = ProxyInjector(port=8899)
+                    pth = threading.Thread(target=proxy.start_proxy, daemon=True)
+                    pth.start()
+                    time.sleep(0.5)
+                    log_info("已在后台自动激活透明注入网关 (http://127.0.0.1:8899)！")
+                except Exception as e:
+                    log_warn(f"后台注入网关拉起告警: {e}")
+
+        ensure_proxy_daemon()
+
         running_weixin = [p for p in psutil.process_iter(['pid', 'name']) if p.info['name'] in ['WeChat.exe', 'Weixin.exe']]
 
         # 模式 1：热附加模式 (微信已在运行，免重新登录/无需杀主进程)
@@ -109,9 +129,9 @@ class ProcessHooker:
             time.sleep(1.5)
 
             log_step("[PASS] [微信全局推文与内置浏览器 Hook 级联挂载完毕！]")
-            log_info("调试指引 (微信 4.1.x 架构规范):")
-            log_info("  • 【远程 CDP 调试】在 Chrome / Edge 浏览器访问 edge://inspect 或 chrome://inspect 直连调试目标网页。")
-            log_info("  • 【内置 vConsole 悬浮球】另开终端运行 wx-h5 proxy，微信访问任意 H5/推文右下角即显示绿色 vConsole 按钮。")
+            log_info("调试指引 (微信 4.1.x 全自动注入模式):")
+            log_info("  • 【全自动公众号推文/H5注入】已自动启动后台透明网关，直接在微信中点击任意公众号文章，页面右下角将自动呈现绿色 vConsole 悬浮球！(免手动拼链接)")
+            log_info("  • 【远程 CDP 调试】在 Chrome / Edge 浏览器访问 edge://inspect 直连调试微信活动网页。")
             log_info("  • 【独立沙箱调试】运行 wx-h5 open <网址>，在自带满血 F12 + JSSDK Mock 的桌面沙箱中秒开调试。")
             log_info("提示: 保持本终端运行即可持续生效，按 Ctrl + C 可随时卸载退出。")
 

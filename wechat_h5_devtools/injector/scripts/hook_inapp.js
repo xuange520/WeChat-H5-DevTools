@@ -42,9 +42,17 @@ if (cpsPtr) {
                             newCmd += " --xweb-enable-inspect=1";
                         }
 
-                        // 4. 主 Broker 进程开启远程 CDP 调试端口
+                        // 4. 自动化透明代理与证书忽略（实现微信直接打开任意公众号推文全自动挂载 vConsole，免手动拼链接）
+                        if (newCmd.indexOf("--ignore-certificate-errors") === -1) {
+                            newCmd += " --ignore-certificate-errors";
+                        }
+                        if (newCmd.indexOf("--proxy-server") === -1) {
+                            newCmd += " --proxy-server=http://127.0.0.1:8899";
+                        }
+
+                        // 5. 主 Broker 进程开启远程 CDP 调试端口 (9222，避开代理 8899 端口)
                         if (cmd.indexOf("--type=") === -1 && newCmd.indexOf("--remote-debugging-port") === -1) {
-                            newCmd += " --remote-debugging-port=8899";
+                            newCmd += " --remote-debugging-port=9222";
                         }
 
                         this.injectedCmd = newCmd;
