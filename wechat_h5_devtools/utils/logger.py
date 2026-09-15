@@ -11,11 +11,13 @@ BANNER_TEXT = """
 ╚╩╝└─┘╩ ╩┴ ┴┴ ┴ ┴   ╩ ╩╚═╝  ═╩╝└─┘ └┘  ╩ └─┘└─┘┴─┘└─┘
 """
 
+from .. import __version__
+
 def print_banner():
     banner_panel = Panel(
         f"[bold cyan]{BANNER_TEXT}[/bold cyan]\n"
         "[bold green]微信 4.x 内置浏览器 / 公众号 H5 满血调试与逆向工程套件[/bold green]\n"
-        "[dim]Version 1.0.0 | High-Performance WeChat H5 Engineering Toolkit[/dim]",
+        f"[dim]Version {__version__} | High-Performance WeChat H5 Engineering Toolkit[/dim]",
         border_style="bright_blue",
         expand=False
     )
