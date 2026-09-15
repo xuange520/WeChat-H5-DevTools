@@ -79,10 +79,17 @@ class BrowserLauncher:
         ext_path = self._build_mock_extension()
         log_step(f"已动态挂载 JSSDK / WeixinJSBridge 自动注入扩展: {ext_path.name}")
 
+        profile_dir = Path(__file__).resolve().parent.parent.parent / "output" / "sandbox_profile"
+        profile_dir.mkdir(parents=True, exist_ok=True)
+
         args = [
             browser_exe,
             f"--user-agent={ua}",
+            f"--user-data-dir={profile_dir}",
             f"--load-extension={ext_path}",
+            "--remote-debugging-port=9222",
+            "--no-first-run",
+            "--no-default-browser-check",
             "--disable-blink-features=AutomationControlled",
         ]
 
@@ -92,9 +99,11 @@ class BrowserLauncher:
         args.append(target_url)
 
         try:
-            log_step("拉起独立浏览器进程并自动挂载满血 F12 控制台...")
+            log_step("拉起独立沙箱浏览器并激活 9222 端口 CDP 协议与满血 F12...")
             subprocess.Popen(args)
-            log_info("浏览器已启动！页面已内置 WeixinJSBridge 挡板，您可以在 DevTools 中尽情调试。")
+            log_info("浏览器沙箱已启动！页面已注入 WeixinJSBridge 移动端挡板。")
+            log_info("CDP 调试协议端点: [bold green]http://127.0.0.1:9222[/bold green]")
+            log_info("目标列表接口: [bold cyan]http://127.0.0.1:9222/json[/bold cyan]")
             return True
         except Exception as e:
             log_error(f"启动浏览器失败: {e}")
