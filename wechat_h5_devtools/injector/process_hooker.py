@@ -109,10 +109,10 @@ class ProcessHooker:
             time.sleep(1.5)
 
             log_step("[PASS] [微信全局推文与内置浏览器 Hook 级联挂载完毕！]")
-            log_info("调试指引:")
-            log_info("  • 【原生 DevTools 检查】在微信中打开任意文章/H5后，右键点击页面选择【检查】或按 F12 即可弹出开发者工具！")
-            log_info("  • 【远程 CDP 调试】可在 Chrome / Edge 浏览器打开 edge://inspect 或 chrome://inspect 查看活动网页！")
-            log_info("  • 【独立沙箱调试】执行 wx-h5 open <网址> 可在完全独立的沙箱浏览器中满血调试！")
+            log_info("调试指引 (微信 4.1.x 架构规范):")
+            log_info("  • 【远程 CDP 调试】在 Chrome / Edge 浏览器访问 edge://inspect 或 chrome://inspect 直连调试目标网页。")
+            log_info("  • 【内置 vConsole 悬浮球】另开终端运行 wx-h5 proxy，微信访问任意 H5/推文右下角即显示绿色 vConsole 按钮。")
+            log_info("  • 【独立沙箱调试】运行 wx-h5 open <网址>，在自带满血 F12 + JSSDK Mock 的桌面沙箱中秒开调试。")
             log_info("提示: 保持本终端运行即可持续生效，按 Ctrl + C 可随时卸载退出。")
 
             try:

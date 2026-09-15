@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package mmbizwxadevremote;
+
+// 调试消息主结构
+// 注意：实际的字段编号与逻辑顺序不同
+message WARemoteDebug_DebugMessage {
+    uint32 seq = 1;              // field 1: 序列号
+    string category = 3;         // field 3: 类别（注意是3不是2！）
+    bytes data = 4;              // field 4: 数据
+    uint32 compressAlgo = 5;     // field 5: 压缩算法
+    uint32 originalSize = 6;     // field 6: 原始大小
+}
+
+// Chrome DevTools 消息
+message WARemoteDebug_ChromeDevtools {
+    string opId = 1;
+    string payload = 2;
+    string jscontextId = 3;
+}
+
+// Chrome DevTools 结果消息
+message WARemoteDebug_ChromeDevtoolsResult {
+    string opId = 1;
+    string payload = 2;
+    string jscontextId = 3;
+}
+
+// 设置上下文
+message WARemoteDebug_SetupContext {
+    string jscontextId = 1;
+    string appid = 2;
+    string version = 3;
+    string platform = 4;
+    string sdkVersion = 5;
+}
+
+// 自定义消息
+message WARemoteDebug_CustomMessage {
+    string name = 1;
+    string payload = 2;
+    uint32 timestamp = 3;
+}
